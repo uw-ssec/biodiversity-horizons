@@ -3,3 +3,5 @@
 ^analyses$
 ^manuscript$
 ^makefile\.R$
+^\.github$
+^LICENSE\.md$
