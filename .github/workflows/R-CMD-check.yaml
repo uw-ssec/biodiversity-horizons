@@ -46,6 +46,9 @@ jobs:
           extra-packages: any::rcmdcheck,covr,lintr,styler
           needs: check
 
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
