@@ -50,3 +50,19 @@ jobs:
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck,covr,lintr,styler
+          needs: check
+  
+      - name: Run test coverage
+        run: Rscript -e 'covr::codecov()'
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Run linting
+        run: Rscript -e 'lintr::lint_package()'
+
+      - name: Check code formatting with styler
+        run: Rscript -e 'styler::style_pkg(strict = TRUE, scope = "file", dry_run = TRUE)'
