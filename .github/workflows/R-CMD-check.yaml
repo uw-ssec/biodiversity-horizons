@@ -65,4 +65,4 @@ jobs:
         run: Rscript -e 'lintr::lint_package()'
 
       - name: Check code formatting with styler
-        run: Rscript -e 'styler::style_pkg(strict = TRUE, scope = "file", dry_run = TRUE)'
+        run: Rscript -e 'styler::style_pkg(strict = TRUE, scope = "file", transformers = styler::tidyverse_style(), reindention = FALSE, check_only = TRUE)'
