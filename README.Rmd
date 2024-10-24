@@ -2,6 +2,7 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/uw-ssec/biodiversity-horizons/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/uw-ssec/biodiversity-horizons/actions/workflows/R-CMD-check.yaml)
+
 [![codecov](https://codecov.io/gh/uw-ssec/biodiversity-horizons/graph/badge.svg?token=ee1oeNuMlb)](https://codecov.io/gh/uw-ssec/biodiversity-horizons)
 <!-- badges: end -->
 
@@ -12,6 +13,7 @@ To install the development version of **biodiversityhorizons** from GitHub, you 
 ```r
 # Install devtools package if you don't have it
 # install.packages("devtools")
+
 
 # Install the biodiversityhorizons package
 devtools::install_github("uw-ssec/biodiversity-horizons")
