@@ -46,6 +46,16 @@ jobs:
           extra-packages: any::rcmdcheck,covr,lintr,styler
           needs: check
 
+      - name: Set up Python for pre-commit
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+        
+      - name: Install pre-commit
+        run: |
+          pip install pre-commit
+          pre-commit install
+
       - name: Run pre-commit hooks
         run: pre-commit run --all-files
 

@@ -3,5 +3,8 @@
 ^analyses$
 ^manuscript$
 ^makefile\.R$
-^\.github$
-^LICENSE\.md$
+^\\.pre-commit-config\\.yaml$
+^\\.github$
+^renv$
+^renv\\.lock$
+^LICENSE\\$
