@@ -1,0 +1,7 @@
+*.html
+renv.lock
+.RData
+.Rhistory
+.Rapp.history
+.Rprofile
+renv/
