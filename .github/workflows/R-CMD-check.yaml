@@ -41,9 +41,9 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
       
-      - name: Install R dependencies
+      - name: Install required R packages
         run: |
-          install.packages(c("magrittr", "usethis", "roxygen2"))
+          Rscript -e 'install.packages(c("magrittr", "usethis", "roxygen2"))'
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
