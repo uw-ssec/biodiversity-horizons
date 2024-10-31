@@ -139,3 +139,6 @@ version.py
 
 # data
 *.nc
+# pixi environments
+.pixi
+*.egg-info
