@@ -1,0 +1,21 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+{
+    "image":"ghcr.io/uw-ssec/coaching-companion:latest",
+  
+    "customizations": {
+      "vscode": {
+        "extensions": [
+            "ms-toolsai.jupyter",
+            "ms-python.python",
+            "REditorSupport.r"
+        ]
+      }
+    },
+    "hostRequirements": {
+        "cpus": 2,
+        "memory": "8gb",
+        "storage": "32gb"
+    },
+    "postCreateCommand": 
+    "sh .devcontainer/postBuild.sh"
+  }
