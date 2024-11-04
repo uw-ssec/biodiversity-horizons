@@ -7,9 +7,9 @@
   "customizations": {
     "vscode": {
       "extensions": [
-          "ms-toolsai.jupyter",
-          "ms-python.python",
-          "REditorSupport.r"
+        "ms-toolsai.jupyter",
+        "ms-python.python",
+        "REditorSupport.r"
       ]
     }
   },
@@ -18,6 +18,5 @@
     "memory": "16gb",
     "storage": "32gb"
   },
-  "postCreateCommand": 
-  "sh .devcontainer/postBuild.sh"
+  "postCreateCommand": "sh .devcontainer/postBuild.sh"
 }

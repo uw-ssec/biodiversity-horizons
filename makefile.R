@@ -43,4 +43,3 @@
 ## see https://pkgdown.r-lib.org/
 # usethis::use_pkgdown()
 # pkgdown::build_site()
-
