@@ -3,3 +3,15 @@
 ^analyses$
 ^manuscript$
 ^makefile\.R$
+^\.github$
+^.pre-commit-config.yaml$
+^.devcontainer$
+^.mypy_cache$
+^.ruff_cache$
+^node_modules$
+^CODE_OF_CONDUCT.md$
+^docs$
+^node_modules$
+^notebooks$
+^pixi.toml$
+^.coveragerc$
