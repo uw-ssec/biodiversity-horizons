@@ -63,9 +63,6 @@ jobs:
       - name: Run pre-commit hooks
         run: pre-commit run --all-files
 
-      - name: Run R CMD check
-        run: R CMD check --no-manual || true
-
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
@@ -81,6 +78,4 @@ jobs:
 
       - name: Check code formatting with styler
         run: |
-          Rscript -e 'styler::style_pkg(strict = TRUE, scope = "file",
-          transformers = styler::tidyverse_style(), reindention = FALSE,
-          check_only = TRUE)'
+          echo "styler::style_pkg(strict = TRUE, scope = 'file', transformers = styler::tidyverse_style(), reindention = FALSE, check_only = TRUE)" | Rscript -
