@@ -18,6 +18,7 @@ repos:
     rev: "v5.0.0"
     hooks:
       - id: check-added-large-files
+        exclude: '^data-raw/.*\.rds$'
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-symlinks
