@@ -1,8 +1,11 @@
-#' Calculate exposure and de-exposure times for species
-#' @param data A row of exposure data (species, world_id, and years)
-#' @param original.state Initial exposure state (0 or 1)
-#' @param consecutive.elements Number of consecutive years for state change
-#' @return A tibble with exposure times and durations for the species
+#' Calculate exposure times for each species
+#'
+#' @param data A row of exposure data
+#' @param original.state Initial exposure state
+#' @param consecutive.elements Minimum consecutive years for state change
+#' @return A tibble with exposure and de-exposure times
+#' @importFrom dplyr filter pull
+#' @importFrom tibble tibble
 exposure_times <- function(data, original.state, consecutive.elements) {
     # Extract species and world_id
     species <- data[1]

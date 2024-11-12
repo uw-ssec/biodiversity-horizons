@@ -1,9 +1,11 @@
-#' Calculate exposure for each species and grid cell
-#' @param data Index of the species
+#' Calculate species exposure to climate changes
+#'
+#' @param data Data for a single species
 #' @param species_range List of grid cell IDs for each species
-#' @param climate_data Climate data tibble
-#' @param niche Niche limits tibble
-#' @return A data frame with exposure results
+#' @param climate_data Data frame of climate data by grid cell
+#' @param niche Niche limits for each species
+#' @return A data frame with exposure data
+#' @importFrom dplyr filter mutate across relocate case_when
 exposure <- function(data, species_range, climate_data, niche) {
   # Get data for the current species
   spp_data <- species_range[[data]]

@@ -1,7 +1,13 @@
 #' Prepare range data to match the grid
-#' @param range_data Polygon data of species distribution
-#' @param grid Grid data (100 km x 100 km)
-#' @return A list of grid cell IDs for each species
+#' @param range_data Data frame of species ranges
+#' @param grid Grid data frame for spatial matching
+#' @return A list of matched ranges
+#' @importFrom dplyr filter mutate select pull
+#' @importFrom sf st_geometry st_intersects
+#' @importFrom purrr discard possibly
+#' @importFrom future plan availableCores
+#' @importFrom furrr future_map
+
 prepare_range <- function(range_data, grid) {
     # Filter presence (extant), origin (native and reintroduced), and seasonal (resident and breeding)
     range_filtered <- range_data %>%

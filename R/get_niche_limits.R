@@ -1,7 +1,11 @@
-#' Compute the thermal niche limits for each species
+#' Calculate thermal niche limits for each species
+#'
 #' @param species_ranges List of grid cell IDs for each species
-#' @param climate_df Tibble of climate data
-#' @return A tibble with niche_max and niche_min for each species
+#' @param climate_df Data frame of climate data by grid cell
+#' @return A tibble with upper and lower niche limits
+#' @importFrom dplyr filter select
+#' @importFrom tibble tibble
+#' @importFrom stats na.omit sd
 get_niche_limits <- function(species_ranges, climate_df) {
   # Filter climate data for the species ranges
   data <- climate_df %>%
