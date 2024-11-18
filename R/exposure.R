@@ -6,6 +6,7 @@
 #' @param niche Niche limits for each species
 #' @return A data frame with exposure data
 #' @importFrom dplyr filter mutate across relocate case_when
+#' @export
 exposure <- function(data, species_range, climate_data, niche) {
   # Get data for the current species
   spp_data <- species_range[[data]]

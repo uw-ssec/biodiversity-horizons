@@ -7,6 +7,7 @@
 #' @importFrom tibble as_tibble
 #' @importFrom terra project rotate
 #' @importFrom exactextractr exact_extract
+#' @export
 extract_climate_data <- function(climate_data, grid) {
     climate <- project(climate_data, "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
     climate <- rotate(climate)

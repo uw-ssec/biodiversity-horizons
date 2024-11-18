@@ -6,6 +6,7 @@
 #' @return A tibble with exposure and de-exposure times
 #' @importFrom dplyr filter pull
 #' @importFrom tibble tibble
+#' @export
 exposure_times <- function(data, original.state, consecutive.elements) {
     # Extract species and world_id
     species <- data[1]

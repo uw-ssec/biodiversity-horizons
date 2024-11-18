@@ -7,7 +7,7 @@
 #' @importFrom purrr discard possibly
 #' @importFrom future plan availableCores
 #' @importFrom furrr future_map
-
+#' @export
 prepare_range <- function(range_data, grid) {
     # Filter presence (extant), origin (native and reintroduced), and seasonal (resident and breeding)
     range_filtered <- range_data %>%

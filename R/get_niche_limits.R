@@ -6,6 +6,7 @@
 #' @importFrom dplyr filter select
 #' @importFrom tibble tibble
 #' @importFrom stats na.omit sd
+#' @export
 get_niche_limits <- function(species_ranges, climate_df) {
   # Filter climate data for the species ranges
   data <- climate_df %>%
