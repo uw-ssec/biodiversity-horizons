@@ -4,14 +4,14 @@
 \alias{exposure_times}
 \title{Calculate exposure times for each species}
 \usage{
-exposure_times(data, original.state, consecutive.elements)
+exposure_times(data, original_state, consecutive_elements)
 }
 \arguments{
 \item{data}{A row of exposure data}
 
-\item{original.state}{Initial exposure state}
+\item{original_state}{Initial exposure state}
 
-\item{consecutive.elements}{Minimum consecutive years for state change}
+\item{consecutive_elements}{Minimum consecutive years for state change}
 }
 \value{
 A tibble with exposure and de-exposure times

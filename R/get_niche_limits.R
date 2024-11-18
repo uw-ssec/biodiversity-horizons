@@ -52,8 +52,13 @@ get_niche_limits <- function(species_ranges, climate_df) {
     row_min_upper <- row_min_mean + row_min_sd
     row_min_lower <- row_min_mean - row_min_sd
 
-    pre_max <- row_max[which(row_max <= row_max_upper & row_max >= row_max_lower)]
-    pre_min <- row_min[which(row_min <= row_min_upper & row_min >= row_min_lower)]
+    pre_max <- row_max[
+      which(row_max <= row_max_upper & row_max >= row_max_lower)
+    ]
+
+    pre_min <- row_min[
+      which(row_min <= row_min_upper & row_min >= row_min_lower)
+    ]
 
     niche_max <- max(pre_max)
     niche_min <- min(pre_min)

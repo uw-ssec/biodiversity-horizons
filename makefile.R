@@ -1,4 +1,3 @@
-
 #### Template of a master script for the project ####
 
 ## Using an advanced tool like {drake} or {targets} is recommended,

@@ -3,13 +3,7 @@ library(furrr)
 library(terra)
 library(pbapply)
 library(parallel)
-
-# Source functions from the /R folder
-source("R/prepare_range.R")
-source("R/extract_climate_data.R")
-source("R/get_niche_limits.R")
-source("R/exposure.R")
-source("R/exposure_times.R")
+library(biodiversityhorizons)
 
 # Set the folder containing the files as the working directory
 path <- "data-raw/"
@@ -47,7 +41,7 @@ names(exposure_list) <- names(primates_range_data)
 # Combine exposure data into a single data frame
 exposure_df <- bind_rows(exposure_list) %>%
   mutate(sum = rowSums(select(., starts_with("2")))) %>%
-  filter(sum < 82) %>%  # Exclude species with no exposure
+  filter(sum < 82) %>% # Exclude species with no exposure
   select(-sum)
 
 # Calculate exposure times (using parallel processing)
@@ -62,7 +56,7 @@ res_final <- pbapply(
   cl = cl
 )
 
-stopCluster(cl)  # Stop the parallel cluster
+stopCluster(cl) # Stop the parallel cluster
 
 # Combine results and clean up
 res_final <- bind_rows(res_final) %>%
