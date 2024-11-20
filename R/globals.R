@@ -1,3 +1,3 @@
-utils::globalVariables(c(
-  "world_id", "species", "values", "year", "presence", "origin", "seasonal"
-))
+utils::globalVariables(c("presence", "origin",
+                         "seasonal", "world_id", "sci_name",
+                         "values", "year", "lengths", "species"))
