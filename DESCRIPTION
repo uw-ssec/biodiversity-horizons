@@ -17,6 +17,7 @@ Imports:
     terra,
     exactextractr,
     future,
+    pbapply,
     furrr
 Suggests:
     testthat (>= 3.0.0)

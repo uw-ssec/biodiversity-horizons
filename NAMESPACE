@@ -2,6 +2,7 @@
 
 export("%>%")
 export(exposure)
+export(exposure_times)
 export(extract_climate_data)
 export(get_niche_limits)
 export(prepare_range)

@@ -19,23 +19,23 @@ prepare_range <- function(range_data, grid) {
     )
 
   # Enable parallel processing
-  plan("multisession", workers = availableCores() - 1)
+  future::plan("multisession", workers = future::availableCores() - 1)
 
-  res <- future_map(
-    st_geometry(range_filtered),
-    possibly(function(x) {
-      y <- st_intersects(x, grid)
+  res <- furrr::future_map(
+    sf::st_geometry(range_filtered),
+    purrr::possibly(function(x) {
+      y <- sf::st_intersects(x, grid)
       y <- unlist(y)
       y <- grid %>%
-        slice(y) %>%
-        pull(world_id)
+        dplyr::slice(y) %>%
+        dplyr::pull(world_id)
       y
     }, quiet = TRUE),
     .progress = TRUE
   )
 
   names(res) <- range_filtered$sci_name
-  res <- discard(res, is.null)
+  res <- purrr::discard(res, is.null)
 
   # Combine elements with the same name
   res_final <- tapply(unlist(res, use.names = FALSE),
