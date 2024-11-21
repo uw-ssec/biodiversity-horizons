@@ -16,12 +16,7 @@ future_climate <- readRDS(paste0(path, "future_climaate_data.rds"))
 grid <- readRDS(paste0(path, "grid.rds"))
 primates_shp <- readRDS(paste0(path, "primates_shapefiles.rds"))
 
-# Source the functions from the /R directory
-source("R/prepare_range.R")
-source("R/extract_climate_data.R")
-source("R/get_niche_limits.R")
-source("R/exposure.R")
-source("R/exposure_times.R")
+devtools::load_all()
 
 # 1. Transform the distribution polygons to match the grid
 primates_range_data <- prepare_range(primates_shp, grid)
@@ -36,8 +31,13 @@ colnames(future_climate_df) <- c("world_id", 2015:2100)
 
 # 3. Compute the thermal limits for each species
 plan("multisession", workers = availableCores() - 1)
-niche_limits <- future_map_dfr(primates_range_data, ~ get_niche_limits(.x, historical_climate_df),
-                               .id = "species", .progress = TRUE)
+
+niche_limits <- future_map_dfr(
+  primates_range_data,
+  ~ get_niche_limits(.x, historical_climate_df),
+  .id = "species",
+  .progress = TRUE
+)
 
 # 4. Calculate exposure
 plan("multisession", workers = availableCores() - 1)
@@ -58,8 +58,13 @@ clusterExport(cl, "exposure_times")
 res_final <- pbapply(
   X = exposure_df,
   MARGIN = 1,
-  FUN = function(x) exposure_times(data = x, original_state = 1, consecutive_elements = 5),
-  cl = cl
+  FUN = function(x) {
+    exposure_times(
+      data = x,
+      original_state = 1,
+      consecutive_elements = 5
+    )
+  }
 )
 
 res_final <- res_final %>%
