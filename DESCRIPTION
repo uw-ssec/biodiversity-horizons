@@ -9,7 +9,17 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports:
-    magrittr
+    magrittr,
+    dplyr,
+    purrr,
+    sf,
+    tibble,
+    terra,
+    exactextractr,
+    future,
+    pbapply,
+    furrr,
+    parallel
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
