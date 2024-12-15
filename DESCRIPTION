@@ -19,7 +19,8 @@ Imports:
     future,
     pbapply,
     furrr,
-    parallel
+    parallel,
+    logger
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
