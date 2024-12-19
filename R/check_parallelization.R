@@ -18,4 +18,4 @@ check_parallelization <- function() {
 }
 
 # Example usage:
-check_parallelization_support()
+check_parallelization()
