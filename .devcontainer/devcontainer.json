@@ -18,5 +18,8 @@
     "memory": "16gb",
     "storage": "32gb"
   },
-  "postCreateCommand": "sh .devcontainer/postBuild.sh"
+  "postCreateCommand": "sh .devcontainer/postBuild.sh",
+  "features": {
+    "ghcr.io/rocker-org/devcontainer-features/r-apt:0": {}
+  }
 }
