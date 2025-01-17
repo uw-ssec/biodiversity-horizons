@@ -11,15 +11,15 @@ species. Cory Merow produced the ranges as part of the [Botanical
 Information and Ecology Network](https://bien.nceas.ucsb.edu/bien/)
 
 The ranges are represented with tif files. Each species is associated
-with 10 tif files—a present day range, plus three future scenarios, each
+with 10 tif files—a present-day range plus three future scenarios, each
 with three time steps. However, `point` ranges (see below) do not have
 future ranges.
 
 Cory produced the ranges using an approach that differs by the number of
-available presences. Species with lots of presences use a maxent/point
+available presences. Species with many presences use a maxent/point
 process approach (`mod_type=ppm`). Those with more limited presences use
 range bagging (`mod_type=rangebag`). Species that have very limited
-presences (e.g. \< 5) can't be modeled and instead use just the presence
+presences (e.g., \< 5) can't be modeled and instead use just the presence
 points (`mod_type=point`).
 
 ### Range archives
@@ -64,11 +64,11 @@ into a list column.
 
 ## Formatting the ranges
 
-Species ranges are often stored as binary rasters, where 1 represented
-presence (or more accurately suspected presence or even merely suitable
-habitat), and 0 or NA represences absence (or unsuitable habitat).
+Species ranges are often stored as binary rasters, where 1 represents
+presence (or, more accurately, suspected presence or even merely suitable
+habitat), and 0 or NA represents absence (or unsuitable habitat).
 
-As distributed the BIEN ranges have a lot of extra information in them,
+As distributed, the BIEN ranges have a lot of extra information,
 so they need to be converted into binary rasters before downstream
 processing. The presence and future ranges are stored in different
 formats.
