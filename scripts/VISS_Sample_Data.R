@@ -13,7 +13,23 @@ log_threshold(INFO)
 log_info("Starting VISS Sample Data script.")
 
 # Set the folder containing the files as the working directory
-path <- "data-raw/"
+
+# Parse command-line arguments
+args <- commandArgs(trailingOnly = TRUE)
+
+if (length(args) == 0) {
+  # If no argument is passed, provide a default
+  # or handle it differently in an interactive session
+  if (interactive()) {
+    path <- "data-raw/"
+    message("No data path argument provided. Using default: ", path)
+  } else {
+    stop("No data folder argument provided.\nUsage: Rscript VISS_Sample_Data.R /path/to/data")
+  }
+} else {
+  path <- args[1]
+}
+
 log_info("Data path set to: {path}")
 
 # Load data
@@ -60,6 +76,8 @@ log_info("Column renaming complete.")
 # 3. Compute the thermal limits for each species
 log_info("Computing thermal limits for each species.")
 plan("multisession", workers = availableCores() - 1)
+# plan("multicore")
+# plan("sequential")
 
 niche_limits <- future_map_dfr(
   primates_range_data,
@@ -87,7 +105,9 @@ exposure_df <- exposure_list %>%
   filter(sum < 82) %>%  # Select only cells with < 82 suitable years
   select(-sum)
 
-cl <- makeCluster(availableCores() - 1)
+library(future)
+# cl <- makeCluster(availableCores() - 1, outfile = "")
+cl <- future::makeClusterPSOCK(1, port = 12000, outfile = NULL, verbose = TRUE)
 log_info("Parallel cluster created with {availableCores() - 1} workers.")
 clusterEvalQ(cl, library(dplyr))
 clusterExport(cl, "exposure_times")

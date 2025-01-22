@@ -30,4 +30,5 @@ COPY . .
 
 RUN Rscript -e "remotes::install_local('.', dependencies=TRUE)"
 
-CMD ["Rscript", "scripts/VISS_Sample_Data.R"]
+# The default CMD uses "data-raw/" as the data path (can be overridden at runtime)
+CMD ["Rscript", "scripts/VISS_Sample_Data.R", "data-raw/"]
