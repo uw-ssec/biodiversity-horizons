@@ -74,8 +74,10 @@ colnames(future_climate_df) <- c("world_id", 2015:2100)
 log_info("Column renaming complete.")
 
 # 3. Compute the thermal limits for each species
-log_info("Computing thermal limits for each species.")
-plan("multisession", workers = availableCores() - 1)
+workers <- availableCores() - 1
+plan_type <- "multisession"
+log_info("Computing thermal limits for each species using {workers} workers and a '{plan_type}' plan.")
+plan(plan_type, workers = workers)
 # plan("multicore")
 # plan("sequential")
 
@@ -102,7 +104,7 @@ log_info("Calculating exposure times.")
 exposure_df <- exposure_list %>%
   bind_rows() %>%
   mutate(sum = rowSums(select(., starts_with("2")))) %>%
-  filter(sum < 82) %>%  # Select only cells with < 82 suitable years
+  filter(sum < 82) %>% # Select only cells with < 82 suitable years
   select(-sum)
 
 library(future)
