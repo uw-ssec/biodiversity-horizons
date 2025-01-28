@@ -7,37 +7,49 @@ library(pbapply)
 library(sf)
 library(parallel)
 library(logger)
+library(future)
 
 # Initialize logger
 log_threshold(INFO)
 log_info("Starting VISS Sample Data script.")
 
-# Set the folder containing the files as the working directory
-
 # Parse command-line arguments
 args <- commandArgs(trailingOnly = TRUE)
 
-if (length(args) == 0) {
-  # If no argument is passed, provide a default
-  # or handle it differently in an interactive session
+# Set Data path
+if (length(args) >= 1) {
+  path <- args[1]
+} else {
+  # Default to data-raw/ if not provided
   if (interactive()) {
     path <- "data-raw/"
     message("No data path argument provided. Using default: ", path)
   } else {
-    stop("No data folder argument provided.\nUsage: Rscript VISS_Sample_Data.R /path/to/data")
+    stop("No data folder argument provided.\nUsage: Rscript VISS_Sample_Data.R /path/to/data [plan_type] [workers]")
   }
+}
+log_info("Data path set to: {path}")
+
+# Plan type
+if (length(args) >= 2) {
+  plan_type <- args[2]
 } else {
-  path <- args[1]
+  plan_type <- "multisession"
 }
 
-log_info("Data path set to: {path}")
+# Number of workers
+if (length(args) >= 3) {
+  workers <- as.numeric(args[3])
+} else {
+  workers <- availableCores() - 1
+}
 
 # Load data
 log_info("Loading data...")
-historical_climate <- readRDS(paste0(path, "historical_climaate_data.rds"))
-future_climate <- readRDS(paste0(path, "future_climaate_data.rds"))
-grid <- readRDS(paste0(path, "grid.rds"))
-primates_shp <- readRDS(paste0(path, "primates_shapefiles.rds"))
+historical_climate <- readRDS(file.path(path, "historical_climaate_data.rds"))
+future_climate     <- readRDS(file.path(path, "future_climaate_data.rds"))
+grid               <- readRDS(file.path(path, "grid.rds"))
+primates_shp       <- readRDS(file.path(path, "primates_shapefiles.rds"))
 log_info("Data loaded successfully.")
 
 # Log data details
@@ -74,12 +86,8 @@ colnames(future_climate_df) <- c("world_id", 2015:2100)
 log_info("Column renaming complete.")
 
 # 3. Compute the thermal limits for each species
-workers <- availableCores() - 1
-plan_type <- "multisession"
-log_info("Computing thermal limits for each species using {workers} workers and a '{plan_type}' plan.")
+log_info("Computing thermal limits for each species using {workers} workers and a '{plan_type}' parallelization plan.")
 plan(plan_type, workers = workers)
-# plan("multicore")
-# plan("sequential")
 
 niche_limits <- future_map_dfr(
   primates_range_data,
@@ -92,7 +100,7 @@ log_info("Thermal limit computation complete.")
 # 4. Calculate exposure
 log_info("Calculating exposure for each species.")
 exposure_list <- future_map(
-  1:length(primates_range_data),
+  seq_along(primates_range_data),
   ~ exposure(.x, primates_range_data, future_climate_df, niche_limits),
   .progress = TRUE
 )
@@ -107,10 +115,7 @@ exposure_df <- exposure_list %>%
   filter(sum < 82) %>% # Select only cells with < 82 suitable years
   select(-sum)
 
-library(future)
-# cl <- makeCluster(availableCores() - 1, outfile = "")
-cl <- future::makeClusterPSOCK(1, port = 12000, outfile = NULL, verbose = TRUE)
-log_info("Parallel cluster created with {availableCores() - 1} workers.")
+cl <- future::makeClusterPSOCK(availableCores() - 1, port = 12000, outfile = NULL, verbose = TRUE)
 clusterEvalQ(cl, library(dplyr))
 clusterExport(cl, "exposure_times")
 
@@ -132,13 +137,24 @@ res_final <- res_final %>%
   na.omit()
 
 log_info("Exposure time calculation complete.")
-
 stopCluster(cl)
 log_info("Cluster stopped.")
 
 # Final data frame with exposure times for each species at each grid cell
 log_info("Final data frame contains {nrow(res_final)} rows.")
 print(res_final)
+
+# 6. Save the output to "outputs/" directory
+output_dir <- "outputs"
+if (!dir.exists(output_dir)) {
+  dir.create(output_dir, recursive = TRUE)
+}
+
+saveRDS(
+  res_final,
+  file.path(output_dir, "res_final.rds")
+)
+log_info("Saved results to {file.path(output_dir, 'res_final.rds')}")
 
 # Reset parallel processing plan
 future::plan("sequential")

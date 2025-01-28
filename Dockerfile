@@ -20,15 +20,20 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN Rscript -e "install.packages('terra', repos='https://cloud.r-project.org')"
-
 RUN Rscript -e "install.packages('remotes', repos='https://cloud.r-project.org')"
 RUN Rscript -e "install.packages('devtools', repos='https://cloud.r-project.org', dependencies=TRUE)"
 
 WORKDIR /home/biodiversity-horizons
 
-COPY . .
+COPY DESCRIPTION .
+COPY NAMESPACE .
+
+COPY R ./R
 
 RUN Rscript -e "remotes::install_local('.', dependencies=TRUE)"
 
-# The default CMD uses "data-raw/" as the data path (can be overridden at runtime)
-CMD ["Rscript", "scripts/VISS_Sample_Data.R", "data-raw/"]
+COPY scripts ./scripts
+
+# By default, run the script with "data-raw/" as path, "multisession", and (availableCores()-1) workers.
+# The user can override by passing in arguments at runtime, e.g.:
+CMD ["Rscript", "scripts/VISS_Sample_Data.R", "data-raw/", "multisession"]
