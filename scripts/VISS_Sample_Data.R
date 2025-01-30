@@ -115,7 +115,7 @@ exposure_df <- exposure_list %>%
   filter(sum < 82) %>% # Select only cells with < 82 suitable years
   select(-sum)
 
-cl <- future::makeClusterPSOCK(availableCores() - 1, port = 12000, outfile = NULL, verbose = TRUE)
+cl <- future::makeClusterPSOCK(workers, port = 12000, outfile = NULL, verbose = TRUE)
 clusterEvalQ(cl, library(dplyr))
 clusterExport(cl, "exposure_times")
 
