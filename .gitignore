@@ -143,3 +143,5 @@ version.py
 # pixi environments
 .pixi
 *.egg-info
+
+outputs/
