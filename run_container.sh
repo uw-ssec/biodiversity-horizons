@@ -27,4 +27,4 @@ fi
 # TODO: Replace with the published Docker image name
 docker run -v "$DATA_DIR":/home/biodiversity-horizons/data-raw \
 -v "$OUT_DIR":/home/biodiversity-horizons/outputs \
-biodiv $* # Pass any additional arguments to the Docker container
+ghcr.io/uw-ssec/biodiversity-horizons $* # Pass any additional arguments to the Docker container
