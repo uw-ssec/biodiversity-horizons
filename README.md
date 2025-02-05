@@ -54,7 +54,8 @@ If this succeeds, the image is downloaded locally.
 
 #### (Optional) GitHub Container Registry Authentication:
 
-If pulling fails with a `“denied”` error, generate a Personal Access Token
+If pulling fails with a `“denied”` error, generate a
+[Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 (classic) with `read:packages` scope and run:
 
 ```
@@ -176,7 +177,7 @@ cd /home/biodiversity-horizons
 Rscript /home/biodiversity-horizons/scripts/VISS_Sample_Data.R /home/biodiversity-horizons/data-raw
 ```
 
-**(Optional) Step 9: Run the R script with custom arguments (e.g., using 2
+**(Optional) Step 8: Run the R script with custom arguments (e.g., using 2
 workers)**
 
 ```
@@ -186,7 +187,7 @@ Rscript /home/biodiversity-horizons/scripts/VISS_Sample_Data.R /home/biodiversit
 ## Running and Developing
 
 Instructions to run and contribute to the portal can be found in
-[**Contributing Guidelines**](./Contributing.md)
+[**Contributing Guidelines**](./CONTRIBUTING.md)
 
 Please follow our [**UW-SSEC Code of Conduct**](./CODE_OF_CONDUCT.md) in all
 interactions. For questions or issues, open an
