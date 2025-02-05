@@ -125,7 +125,65 @@ You can pass custom arguments (e.g., parallel plan, workers), example:
 
 These extra arguments are forwarded to the R script inside the container.
 
-### Running and Developing
+## Setup and Run Apptainer
+
+**Step 1: Navigate to the biodiversity-horizons project directory**
+
+```
+cd ~/Desktop/biodiversity-horizons  # Adjust this path as needed
+```
+
+**Step 2: Run Docker with Apptainer inside an AMD64 environment**
+
+```
+docker run --rm -it --privileged \
+  --platform linux/amd64 \
+  -v $(pwd):/mnt \
+  godlovedc/apptainer bash
+```
+
+### Inside Docker Container:
+
+**Step 3: Pull and convert the Docker image into a .sif file for Apptainer**
+
+```
+apptainer pull /mnt/biodiversity-horizons.sif docker://ghcr.io/uw-ssec/biodiversity-horizons:latest
+```
+
+**Step 4: Verify the .sif file was created**
+
+```
+ls -l /mnt/biodiversity-horizons.sif
+```
+
+**Step 5: Run Apptainer shell and mount required directories**
+
+```
+apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw /mnt/biodiversity-horizons.sif
+```
+
+### Inside Apptainer Shell:
+
+**Step 6: Move to the correct working directory**
+
+```
+cd /home/biodiversity-horizons
+```
+
+**Step 7: Run the R script**
+
+```
+Rscript /home/biodiversity-horizons/scripts/VISS_Sample_Data.R /home/biodiversity-horizons/data-raw
+```
+
+**(Optional) Step 9: Run the R script with custom arguments (e.g., using 2
+workers)**
+
+```
+Rscript /home/biodiversity-horizons/scripts/VISS_Sample_Data.R /home/biodiversity-horizons/data-raw multisession 2
+```
+
+## Running and Developing
 
 Instructions to run and contribute to the portal can be found in
 [**Contributing Guidelines**](./Contributing.md)
