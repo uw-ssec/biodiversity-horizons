@@ -171,3 +171,42 @@ Request:
   naming for pull request titles.
 
 Your contributions make this project better—thank you for your support! 🚀
+
+### Configuring Precommit
+
+PRs will fail style and formatting checks as configured by [precommit](), but
+you can set up your local repository such that precommit runs every time you
+commit. This way, you can fix any errors before you send out pull requests!!
+
+To do this, install [Pixi](https://pixi.sh/latest/) using either the
+[instructions on their website](https://pixi.sh/latest/#installation), or the
+commands below:
+
+**MacOS/Linux:**
+
+```
+curl -fsSL https://pixi.sh/install.sh | bash
+```
+
+**Windows:** [Check the website](https://pixi.sh/latest/#installation)
+
+#### Configure Precommit to run on every commit
+
+Then, once Pixi is installed, run the following command to set up precommit
+checks on every commit
+
+```
+pixi run precommit-install
+```
+
+#### Manually run precommit on non-committed files
+
+```
+pixi run precommit
+```
+
+#### Manually run precommit on all files
+
+```
+pixi run precommit-all
+```
