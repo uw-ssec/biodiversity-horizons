@@ -11,39 +11,12 @@ library(future)
 
 # Initialize logger
 log_threshold(INFO)
-log_info("Starting VISS Sample Data script.")
-
-# Parse command-line arguments
-args <- commandArgs(trailingOnly = TRUE)
-
-# Set Data path
-if (length(args) >= 1) {
-  path <- args[1]
-} else {
-  # Default to data-raw/ if not provided
-  if (interactive()) {
-    path <- "data-raw/"
-    message("No data path argument provided. Using default: ", path)
-  } else {
-    stop("No data folder argument provided.\nUsage: Rscript VISS_Sample_Data.R /path/to/data [plan_type] [workers]")
+log_info("Starting exposure workflow")
+exposure_time_workflow <- function(path, plan_type, workers) {
+  if (workers == NULL) {
+    workers <- availableCores() - 1
+    log_info("Number of workers not provided. Using {workers} workers.")
   }
-}
-log_info("Data path set to: {path}")
-
-# Plan type
-if (length(args) >= 2) {
-  plan_type <- args[2]
-} else {
-  plan_type <- "multisession"
-}
-
-# Number of workers
-if (length(args) >= 3) {
-  workers <- as.numeric(args[3])
-} else {
-  workers <- availableCores() - 1
-}
-
 # Load data
 log_info("Loading data...")
 historical_climate <- readRDS(file.path(path, "historical_climaate_data.rds"))
@@ -159,3 +132,4 @@ log_info("Saved results to {file.path(output_dir, 'res_final.rds')}")
 # Reset parallel processing plan
 future::plan("sequential")
 log_info("VISS Sample Data script completed successfully.")
+}

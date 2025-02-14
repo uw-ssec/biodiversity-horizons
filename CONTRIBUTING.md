@@ -38,7 +38,7 @@ commands in your **R console** or **RStudio** to install them:
 1. Install devtools if you don't already have it:
 
 ```r
-install.packages("devtools")
+install.packages("devtools", dependencies=TRUE)
 ```
 
 2. Install all dependencies from the DESCRIPTION file:
