@@ -25,7 +25,7 @@ library(logger)
 #'          indicating the file path to save the results as an RDS.
 #' @return The function returns the saved result that is also stored in the output RDS file path.
 prepare_range_data_from_shp_file <- function(input_file_path, grid, realm, use_parallel = TRUE, rds_output_file_path = "gridded_ranges.rds") {
-  
+
   log_info("Reading the Input .shp File...")
   range_data <- st_read(here(input_file_path))
 
