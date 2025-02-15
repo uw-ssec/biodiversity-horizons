@@ -65,7 +65,7 @@ filter_range_data <- function(range_data, realm) {
   range_filtered <- range_data %>%
     dplyr::filter(presence == 1, origin %in% c(1, 2), seasonal %in% c(1, 2)) %>%
     dplyr::filter(
-      if (realm == "terrestial") terrestial == "true"
+      if (realm == "terrestial") terrestial == "true" #codespell:ignore terrestial
       else if (realm == "marine") marine == "true"
       else TRUE
     )

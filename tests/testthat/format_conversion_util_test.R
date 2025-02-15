@@ -17,12 +17,12 @@ test_that("filter_range_data() filters correctly based on realm", {
     presence = c(1, 1, 2, 1, 1),
     origin = c(1, 2, 1, 3, 2),
     seasonal = c(1, 2, 3, 1, 2),
-    terrestial = c("true", "false", "true", "true", "true"),
+    terrestial = c("true", "false", "true", "true", "true"), #codespell:ignore terrestial
     marine = c("false", "true", "false", "false", "true")
   )
   
   # Test for terrestrial realm
-  result <- filter_range_data(range_data, "terrestial")
+  result <- filter_range_data(range_data, "terrestial") #codespell:ignore terrestial
   expect_equal(nrow(result), 2)
   
   # Test for marine realm
