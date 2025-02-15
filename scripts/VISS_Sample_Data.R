@@ -13,7 +13,7 @@ library(future)
 log_threshold(INFO)
 log_info("Starting exposure workflow")
 exposure_time_workflow <- function(path, plan_type, workers) {
-  if (workers == NULL) {
+  if (is.null(workers)) {
     workers <- availableCores() - 1
     log_info("Number of workers not provided. Using {workers} workers.")
   }

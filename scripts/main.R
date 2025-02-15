@@ -1,7 +1,4 @@
 library(optparse)
-library(terra)
-library(future)
-source("scripts/VISS_Sample_Data.R")
 
 check_not_null <- function(x, name) {
   if (is.null(x)) {
@@ -11,6 +8,7 @@ check_not_null <- function(x, name) {
 }
 
 parse_extent <- function(extent) {
+  library(terra)
   extent <- strsplit(extent, ",")[[1]]
   if (length(extent) != 4) {
     stop("Extent must be a comma separated string with 4 values.")
@@ -18,7 +16,6 @@ parse_extent <- function(extent) {
   extent <- as.numeric(extent)
   return(ext(extent))
 }  
-# sprintf("ex: %s", parse_extent("-180,180,-90,90"))
 
 run_shp2rds <- function(args) {
   option_list <- list(
@@ -27,18 +24,17 @@ run_shp2rds <- function(args) {
     make_option(c("-o", "--output"), type = "character",
                 help = "The output .rds file",),    
     make_option(c("-e", "--extent"), type = "character",
-                help = "The extent as comma separated values, e.g. -180,180,-90,90)",
+                help = "The extent as comma separated values. Default is -180,180,-90,90/",
                default = "-180,180,-90,90"),
     make_option(c("-r", "--resolution"), type = "numeric",
-                help = "Resolution",
+                help = "Resolution. Default is 1.",
                default = 1),
     make_option(c("-c", "--crs"), type = "character",
-                help = "The CRS",
+                help = "The CRS, default is EPSG:4326.",
                default = "EPSG:4326")
   )
 
-  opt_parser <- OptionParser(option_list = option_list)
-  opt <- parse_args(opt_parser, args = args[-1])
+  opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])  
   check_not_null(opt$input, "input")
   check_not_null(opt$output, "output")
 
@@ -55,21 +51,33 @@ run_shp2rds <- function(args) {
   # TODO Ishika/Anuj: call the function to convert the shapefile to rds
 }
 
+safe_parse_opts <- function(opt_parser, args) {
+  # Function to safely parse the options. Shows the help if there's an error.
+  opt <- tryCatch({
+    opt <- parse_args(opt_parser, args = args)
+    opt
+  }, error = function(e) {
+    cat("Error parsing arguments:", e$message, "\n")
+    opt <- parse_args(opt_parser, args=c("--help"))
+    FALSE
+  })
+  return(opt)
+}
 
 run_exposure <- function(args) {
+  source("scripts/VISS_Sample_Data.R")
   option_list <- list(
     make_option(c("-d", "--data_path"), type = "character",
                 help = "Data path with input files"),
     make_option(c("-p", "--plan_type"), type = "character",
-                help = "The plan type to use to parallel processing",
+                help = "The plan type to use to parallel processing. Default is multisession.",
                 default = "multisession"),    
     make_option(c("-w", "--workers"), type = "numeric",
-                help = "Number of workers to use (uses availableCores()-1 if not provided)",
+                help = "Number of workers to use (uses availableCores()-1 if not provided).",
                default = NULL)
   )  
   
-  opt_parser <- OptionParser(option_list = option_list)
-  opt <- parse_args(opt_parser, args = args[-1])
+  opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])  
   check_not_null(opt$data_path, "data_path")  
 
   print("Calculating exposure using the following options:")
