@@ -173,15 +173,15 @@ cd /home/biodiversity-horizons
 
 **Step 7: Run the R script**
 
-```
-Rscript /home/biodiversity-horizons/scripts/VISS_Sample_Data.R /home/biodiversity-horizons/data-raw
+```bash
+Rscript scripts/main.R exposure --data data-raw/
 ```
 
 **(Optional) Step 8: Run the R script with custom arguments (e.g., using 2
 workers)**
 
-```
-Rscript /home/biodiversity-horizons/scripts/VISS_Sample_Data.R /home/biodiversity-horizons/data-raw multisession 2
+```bash
+Rscript scripts/exposure_workflow.R -d /path/to/data -p multisession -w 2
 ```
 
 ## Running and Developing

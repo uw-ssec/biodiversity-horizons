@@ -24,7 +24,7 @@ run_shp2rds <- function(args) {
     make_option(c("-o", "--output"), type = "character",
                 help = "The output .rds file",),    
     make_option(c("-e", "--extent"), type = "character",
-                help = "The extent as comma separated values. Default is -180,180,-90,90/",
+                help = "The extent as comma separated values. Default is -180,180,-90,90.",
                default = "-180,180,-90,90"),
     make_option(c("-r", "--resolution"), type = "numeric",
                 help = "Resolution. Default is 1.",
@@ -65,7 +65,7 @@ safe_parse_opts <- function(opt_parser, args) {
 }
 
 run_exposure <- function(args) {
-  source("scripts/VISS_Sample_Data.R")
+  source("scripts/exposure_workflow.R")
   option_list <- list(
     make_option(c("-d", "--data_path"), type = "character",
                 help = "Data path with input files"),
