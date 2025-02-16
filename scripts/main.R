@@ -17,6 +17,22 @@ parse_extent <- function(extent) {
   return(ext(extent))
 }
 
+safe_parse_opts <- function(opt_parser, args) {
+  # Function to safely parse the options. Shows the help if there's an error.
+  opt <- tryCatch(
+    {
+      opt <- parse_args(opt_parser, args = args)
+      opt
+    },
+    error = function(e) {
+      cat("Error parsing arguments:", e$message, "\n")
+      parse_args(opt_parser, args = c("--help"))
+      FALSE
+    }
+  )
+  return(opt)
+}
+
 run_shp2rds <- function(args) {
   option_list <- list(
     make_option(c("-i", "--input"),
@@ -59,22 +75,8 @@ run_shp2rds <- function(args) {
   cat("CRS:", opt$crs, "\n")
 
   # TODO Ishika/Anuj: call the function to convert the shapefile to rds
-}
-
-safe_parse_opts <- function(opt_parser, args) {
-  # Function to safely parse the options. Shows the help if there's an error.
-  opt <- tryCatch(
-    {
-      opt <- parse_args(opt_parser, args = args)
-      opt
-    },
-    error = function(e) {
-      cat("Error parsing arguments:", e$message, "\n")
-      opt <- parse_args(opt_parser, args = c("--help"))
-      FALSE
-    }
-  )
-  return(opt)
+  # For now, just copy the file to test output and docker volume mounts
+  file.copy(opt$input, opt$output)
 }
 
 run_exposure <- function(args) {
@@ -106,6 +108,7 @@ run_exposure <- function(args) {
   exposure_time_workflow(opt$data_path, opt$plan_type, opt$workers)
 }
 
+# Main function
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
   stop("No command provided. Use 'shp2rds', 'tiff2rds' or 'exposure'.")
