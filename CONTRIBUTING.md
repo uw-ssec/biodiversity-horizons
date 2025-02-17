@@ -49,8 +49,8 @@ devtools::install_deps()
 
 ## Using the Package Locally
 
-The primary script for running the project is located at
-`scripts/main.R`. Follow these steps to use it.
+The primary script for running the project is located at `scripts/main.R`.
+Follow these steps to use it.
 
 ### Step 1: Execute the Script Locally
 
@@ -61,6 +61,7 @@ how to use it:
 Rscript scripts/main.R   # will show the sub-commands supported
 Rscript scripts/main.R exposure --help # help for the exposure workflow
 ```
+
 You can execute the exposure command as follows
 
 ```bash
