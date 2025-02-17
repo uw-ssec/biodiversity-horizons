@@ -24,14 +24,15 @@ library(logger)
 #' @param output_file A character string,
 #'          indicating the file path to save the results as an RDS.
 #' @return The function returns the saved result that is also stored in the output RDS file path.
-prepare_range_data_from_shp_file <- function(input_file_path, grid, realm, use_parallel = TRUE, rds_output_file_path = "gridded_ranges.rds") {
+prepare_range_data_from_shp_file <- function(input_file_path, grid, realm, use_parallel = TRUE,
+ number_of_workers = availableCores() - 1, rds_output_file_path = "gridded_ranges.rds") {
 
-  log_info("Reading the Input .shp File...")
+  log_info(paste("Reading the Input .shp File at path: ", input_file_path))
   range_data <- st_read(here(input_file_path))
 
   # Set Up Parallel Processing
   if (use_parallel) {
-    plan("multisession", workers = availableCores() - 1)
+    plan("multisession", workers = number_of_workers)
   } else {
     plan("sequential")
   }
@@ -61,7 +62,7 @@ prepare_range_data_from_shp_file <- function(input_file_path, grid, realm, use_p
 
 # Helper Function: Filter Range Data Based on Realm
 filter_range_data <- function(range_data, realm) {
-  log_info("Filtering Range Data Based on Realm ANUJ SINHA...")
+  log_info("Filtering Range Data Based on Realm...")
   range_filtered <- range_data %>%
     dplyr::filter(presence == 1, origin %in% c(1, 2), seasonal %in% c(1, 2)) %>%
     dplyr::filter(
