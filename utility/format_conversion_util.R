@@ -23,8 +23,10 @@ library(logger)
 #'          indicating whether to use parallel processing (default is TRUE).
 #' @param output_file A character string,
 #'          indicating the file path to save the results as an RDS.
-#' @return The function returns the saved result that is also stored in the output RDS file path.
-prepare_range_data_from_shp_file <- function(input_file_path, grid, realm, use_parallel = TRUE,
+#' @return The function returns the saved result,
+#' the result is also stored in the output RDS file path.
+#' @export
+prepare_range_data_from_shp_file <- function(input_file_path, grid, realm="abcd", use_parallel = TRUE,
  number_of_workers = availableCores() - 1, rds_output_file_path = "gridded_ranges.rds") {
 
   log_info(paste("Reading the Input .shp File at path: ", input_file_path))
@@ -93,7 +95,7 @@ intersect_ranges_with_grid <- function(range_filtered, grid) {
 clean_results <- function(res) {
 
   # Remove NULL results
-  res <- discard(res, is.null)
+  res <- purrr::discard(res, is.null)
 
   # Combine elements with the same name
   unlisted_res <- unlist(res, use.names = FALSE)
@@ -101,4 +103,57 @@ clean_results <- function(res) {
   res <- tapply(unlisted_res, repeated_names, FUN = c)
 
   return(res)
+}
+
+
+#' Process Climate Grid Data
+#'
+#' This function processes climate data from a raster file,
+#' extracts mean temperature values for each grid cell over a specified
+#' range of years, converts temperatures from Kelvin to Celsius,
+#' and stores the result in a `.rds` file.
+#'
+#' @param input_file A character string specifying the path to the
+#'                   input `.tif` file.
+#'                   The file should contain climate data.
+#' @param output_file A character string specifying the path and
+#'                    name of the output `.rds` file to save the
+#'                    processed grid data.
+#' @param year_range A numeric vector specifying the range of years
+#'                   to be used as column names in the output
+#'                   data. The default is `1850:2014`.
+#'                   The length of `year_range` should match the number of
+#'                   time series data points in the raster.
+#'
+#' @return A tibble containing the processed climate data:
+#'         - `world_id`: A unique identifier for each grid cell.
+#'         - Columns representing the specified range of years
+#'           with mean temperature data for each grid cell.
+#' @export
+prepare_climate_data_from_tif <- function(input_file,
+                                          output_file,
+                                          year_range = 1850:2014) {
+  log_info(paste("Reading the Input .tif File at path: ", input_file))
+  input_data <- rast(here(input_file))
+
+  log_info("Convert raster to spatial grid with world IDs...")
+  grid <- input_data %>%
+    st_as_stars() %>%
+    st_as_sf() %>%
+    mutate(world_id = 1:nrow(.)) %>%
+    select(world_id)
+
+  log_info("Extract mean temperature and convert from Kelvin to Celsius...")
+  updated_grid <- exact_extract(input_data, grid, fun = "mean") - 273.15
+
+  # Tidy up the data
+  updated_grid <- updated_grid %>%
+    rename_with(~ as.character(year_range)) %>%
+    mutate(world_id = grid$world_id) %>%
+    relocate(world_id)
+
+  log_info(paste("Save the result as an .rds file at path: ", output_file))
+  saveRDS(updated_grid, here(output_file))
+
+  return(updated_grid)
 }
