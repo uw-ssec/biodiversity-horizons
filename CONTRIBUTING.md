@@ -38,7 +38,7 @@ commands in your **R console** or **RStudio** to install them:
 1. Install devtools if you don't already have it:
 
 ```r
-install.packages("devtools")
+install.packages("devtools", dependencies=TRUE)
 ```
 
 2. Install all dependencies from the DESCRIPTION file:
@@ -49,8 +49,8 @@ devtools::install_deps()
 
 ## Using the Package Locally
 
-The primary script for running the project is located at
-`scripts/VISS_Sample_Data.R`. Follow these steps to use it.
+The primary script for running the project is located at `scripts/main.R`.
+Follow these steps to use it.
 
 ### Step 1: Execute the Script Locally
 
@@ -58,7 +58,14 @@ Run the script using the Rscript command in your terminal. Here are examples of
 how to use it:
 
 ```bash
-Rscript scripts/VISS_Sample_Data.R
+Rscript scripts/main.R   # will show the sub-commands supported
+Rscript scripts/main.R exposure --help # help for the exposure workflow
+```
+
+You can execute the exposure command as follows
+
+```bash
+Rscript scripts/main.R exposure --data data-raw/
 ```
 
 This will use:
@@ -70,7 +77,7 @@ This will use:
 #### Pass Custom Arguments: Specify custom arguments (path, plan, workers):
 
 ```bash
-Rscript scripts/VISS_Sample_Data.R /path/to/data multicore 4
+Rscript scripts/exposure_workflow.R -d /path/to/data -p multicore -w 4
 ```
 
 ### Step 2: Output Files
@@ -119,7 +126,7 @@ docker run --rm \
   -v /path/to/data-raw/:/home/biodiversity-horizons/data-raw/ \
   -v /path/to/outputs/:/home/biodiversity-horizons/outputs/ \
   biodiversity-horizons \
-  Rscript scripts/VISS_Sample_Data.R /home/biodiversity-horizons/data-raw multicore 4
+  Rscript scripts/exposure_workflow.R /home/biodiversity-horizons/data-raw multicore 4
 ```
 
 This command:
@@ -144,7 +151,7 @@ Example:
 ```bash
 docker run --rm \
   -v $(pwd)/data-raw/:/home/biodiversity-horizons/data-raw/ \
-  biodiversity-horizons
+  biodiversity-horizons -d ./data-raw
 ```
 
 ## Pull Requests

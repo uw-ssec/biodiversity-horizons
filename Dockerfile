@@ -28,7 +28,7 @@ WORKDIR /home/biodiversity-horizons
 COPY DESCRIPTION .
 COPY NAMESPACE .
 
-# by braking this up into two steps, we can cache the installation of dependencies
+# by breaking this up into two steps, we can cache the installation of dependencies
 # and the image builds much faster when changing code
 RUN Rscript -e "remotes::install_local('.', dependencies=TRUE)" # Install dependencies
 COPY R ./R
@@ -39,4 +39,4 @@ COPY scripts ./scripts
 # Run the script with "data-raw/" as path since that is where, run_container.sh will mount the data
 # We'll also use "multisession", and (availableCores()-1) workers as default
 # The user can override by passing in arguments at runtime, e.g.: "multisession" 4
-ENTRYPOINT ["Rscript", "scripts/VISS_Sample_Data.R", "data-raw/"]
+ENTRYPOINT ["Rscript", "scripts/main.R"]
