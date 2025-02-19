@@ -1,3 +1,6 @@
+# test_array <- readRDS("data-raw/tier_1/data/climate/historical_array.rds")
+# str(test_array)
+
 # Load necessary libraries
 library(terra)
 library(tidyverse)
@@ -38,7 +41,9 @@ process_climate_array_data <- function(input_dir, output_dir, start_year, use_pa
     array_data <- readRDS(file)
     dims <- dim(array_data)
 
-    # Auto-detect if data has 5 dimensions (includes 'member') or 4 dimensions
+    log_info("Array dimensions detected: {paste(dims, collapse = ' x ')}")
+
+    # Auto-detect if data has 5 dimensions (includes 'member')
     if (length(dims) == 5) {
       log_info("Detected 5D array, setting members = TRUE")
       members <- TRUE
@@ -48,6 +53,7 @@ process_climate_array_data <- function(input_dir, output_dir, start_year, use_pa
     } else {
       stop("Error: Expected a 4D or 5D array but got ", length(dims), "D array.")
     }
+
 
     # Get raster extent from metadata
     lon_range <- range(attributes(array_data)$Variables$common$lon)
@@ -67,6 +73,11 @@ process_climate_array_data <- function(input_dir, output_dir, start_year, use_pa
 
     return(raster_data)
   })
+
+  # # If only one file, return its processed data directly
+  # if (length(files) == 1) {
+  #   processed_rasters <- processed_rasters[[1]]
+  # }
 
   log_info("All files processed successfully!")
   return(processed_rasters)
@@ -131,3 +142,57 @@ array_to_raster <- function(data, start_year, members = FALSE, raster_extent) {
     return(r_final)
   }
 }
+
+# # Run the script
+input_directory <- "data-raw/tier_1/data/climate"
+output_directory <- "data-raw/tier_1/data/climate/outputs"
+
+# # Test both cases
+# # members_flag <- TRUE  # Set to TRUE or FALSE to test different scenarios
+
+# log_info("Starting test run with members = {members_flag}...")
+# processed_raster <- process_climate_array_data(input_directory, output_directory, 1961)
+
+# # Check overall structure
+# log_info("Processed raster structure:")
+# print(str(processed_raster, max.level = 2))  # Display high-level structure
+
+# # If members = TRUE → Expect "member_1", "member_2", etc.
+# if (members_flag) {
+#   log_info("Checking file names in processed raster (members = TRUE):")
+#   print(names(processed_raster))  # Should return a list of members
+
+#   if ("member_1" %in% names(processed_raster)) {
+#     log_info("Checking member_1 structure:")
+#     print(names(processed_raster$member_1))  # Should return a list of years
+
+#     if ("1961" %in% names(processed_raster$member_1)) {
+#       log_info("Checking 1961 structure:")
+#       print(str(processed_raster$member_1$'1961', max.level = 2))  # Should return a list of months
+
+#       # Plot first month's data
+#       log_info("Plotting first month's raster (members = TRUE):")
+#       plot(processed_raster$member_1$`1961`[[1]])
+#     } else {
+#       log_error("1961 not found in processed data!")
+#     }
+#   } else {
+#     log_error("member_1 not found in processed data!")
+#   }
+# } else {
+#   # If members = FALSE → Expect a list indexed by years
+#   log_info("Checking file names in processed raster (members = FALSE):")
+#   print(names(processed_raster))  # Should return a list of years (1961, 1962, ...)
+
+#   if ("1961" %in% names(processed_raster)) {
+#     log_info("Checking 1961 structure:")
+#     print(str(processed_raster$'1961', max.level = 2))  # Should return a list of months
+
+#     # Plot first month's data
+#     log_info("Plotting first month's raster (members = FALSE):")
+#     plot(processed_raster$`1961`[[1]])
+#   } else {
+#     log_error("1961 not found in processed data!")
+#   }
+# }
+
