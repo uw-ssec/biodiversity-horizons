@@ -157,3 +157,40 @@ prepare_climate_data_from_tif <- function(input_file,
 
   return(updated_grid)
 }
+
+#' Create a Spatial Grid as an sf Object
+#'
+#' This function generates a raster grid with a specified extent, resolution,
+#' and coordinate reference system (CRS),
+#' assigns unique IDs to each cell,
+#' and converts it into a simple feature (`sf`) object.
+#'
+#' @param extent_vals A numeric vector of four values specifying the extent
+#' in the format `c(xmin, xmax, ymin, ymax)`. Default is `c(-180, 180, -90, 90)`
+#' @param resolution A numeric value defining grid resolution. Default is `1`
+#' @param crs A character string specifying the coordinate reference system
+#' (CRS) in EPSG format. Default is `"EPSG:4326"`.
+#'
+#' @return An `sf` object representing the spatial grid.
+#' @export
+create_grid <- function(extent_vals = c(-180, 180, -90, 90),
+                        resolution = 1, crs = "EPSG:4326") {
+
+  # Create a raster with the specified extent, resolution, and CRS
+  r <- rast(extent = ext(extent_vals[1],
+                         extent_vals[2],
+                         extent_vals[3],
+                         extent_vals[4]),
+            resolution = resolution,
+            crs = crs)
+
+  # Assign unique IDs to grid cells
+  r$world_id <- 1:ncell(r)
+
+  # Convert raster to an sf object
+  grid <- r %>%
+    st_as_stars() %>%
+    st_as_sf()
+
+  return(grid)
+}
