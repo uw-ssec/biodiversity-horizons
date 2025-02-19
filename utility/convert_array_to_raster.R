@@ -1,9 +1,7 @@
 # Load necessary libraries
-library(terra)      # Raster processing
-library(tidyverse)  # Data manipulation
-library(here)       # File path management
-library(glue)       # String formatting
-library(furrr)      # Parallel processing
+library(terra)
+library(tidyverse)
+library(furrr)
 library(logger)
 
 #' @param data A multidimensional climate array (4D: year, month, lat, lon or 5D: member, year, month, lat, lon).
