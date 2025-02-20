@@ -17,7 +17,38 @@ parse_extent <- function(extent) {
   return(ext(extent))
 }
 
+
+run_tif2rds <- function(args) {
+  source("utility/format_conversion_util.R")
+  option_list <- list(
+    make_option(c("-i", "--input"), type = "character",
+                help = "Path to the input .tif file"),
+    make_option(c("-o", "--output"), type = "character",
+                help = "Path to save the output .rds file"),
+    make_option(c("-y", "--year_range"), type = "character",
+                default = "1850:2014",
+                help = "Year range as a sequence (e.g., '1850:2014')")
+  )
+  opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])
+  check_not_null(opt$input, "input")
+  check_not_null(opt$output, "output")
+
+  year_range <- eval(parse(text = opt$year_range))
+  print("Converting tif to rds using the following options:")
+  cat("Input:", opt$input, "\n")
+  cat("Output:", opt$output, "\n")
+  cat("Year range:", opt$year_range, "\n")
+
+  climate_data <- prepare_climate_data_from_tif(input_file = opt$input,
+                                                output_file = opt$output,
+                                                year_range = year_range)
+  print("File converted successfully!")
+
+}
+
+
 run_shp2rds <- function(args) {
+  source("utility/format_conversion_util.R")
   option_list <- list(
     make_option(c("-i", "--input"),
       type = "character",
@@ -41,6 +72,21 @@ run_shp2rds <- function(args) {
       type = "character",
       help = "The CRS, default is EPSG:4326.",
       default = "EPSG:4326"
+    ),
+    make_option(c("-m", "--realm"),
+      type = "character",
+      help = "The realm to use for filtering. Default is all.",
+      default = "all"
+    ),
+    make_option(c("-p", "--parallel"),
+      type = "logical",
+      help = "Use parallel processing. Default is TRUE.",
+      default = TRUE
+    ),
+    make_option(c("-w", "--workers"),
+      type = "numeric",
+      help = "Number of workers to use. Default is availableCores()-1.",
+      default = availableCores()-1
     )
   )
 
@@ -57,8 +103,20 @@ run_shp2rds <- function(args) {
   cat("Extent:", sprintf("%s", extent), "\n")
   cat("Resolution:", opt$resolution, "\n")
   cat("CRS:", opt$crs, "\n")
+  cat("Realm:", opt$realm, "\n")
+  cat("Parallel:", opt$parallel, "\n")
+  cat("Workers:", opt$workers, "\n")
 
-  # TODO Ishika/Anuj: call the function to convert the shapefile to rds
+  grid <- create_grid(extent_vals = extent,
+                      resolution = opt$resolution,
+                      crs = opt$crs)
+  range_data <- prepare_range_data_from_shp_file(input_file_path = opt$input,
+                                                 grid = grid,
+                                                 realm = opt$realm,
+                                                 use_parallel = opt$parallel,
+                                                 number_of_workers = opt$workers,
+                                                 rds_output_file_path = opt$output)
+  print("File converted successfully!")
 }
 
 safe_parse_opts <- function(opt_parser, args) {
@@ -108,13 +166,15 @@ run_exposure <- function(args) {
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
-  stop("No command provided. Use 'shp2rds', 'tiff2rds' or 'exposure'.")
+  stop("No command provided. Use 'shp2rds', 'tif2rds' or 'exposure'.")
 }
 cmd <- args[1]
 if (cmd == "shp2rds") {
   run_shp2rds(args)
 } else if (cmd == "exposure") {
   run_exposure(args)
+} else if (cmd == "tif2rds") {
+  run_tif2rds(args)
 } else {
-  stop("Invalid command. Use 'shp2rds', 'tiff2rds' or 'exposure'.")
+  stop("Invalid command. Use 'shp2rds', 'tif2rds' or 'exposure'.")
 }

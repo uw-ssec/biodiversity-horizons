@@ -80,7 +80,7 @@ filter_range_data <- function(range_data, realm) {
 # Helper Function: Intersect Range Data with Grid
 intersect_ranges_with_grid <- function(range_filtered, grid) {
 
-  intersected_data <- future_map(st_geometry(range_filtered), possibly(function(x) {
+  intersected_data <- future_map(st_geometry(range_filtered), purrr::possibly(function(x) {
     y <- st_intersects(x, grid)
     y <- unlist(y)
     y <- grid %>%
@@ -144,7 +144,7 @@ prepare_climate_data_from_tif <- function(input_file,
     select(world_id)
 
   log_info("Extract mean temperature and convert from Kelvin to Celsius...")
-  updated_grid <- exact_extract(input_data, grid, fun = "mean") - 273.15
+  updated_grid <- exactextractr:::exact_extract(input_data, grid, fun = "mean") - 273.15
 
   # Tidy up the data
   updated_grid <- updated_grid %>%
