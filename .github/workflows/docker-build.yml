@@ -37,8 +37,8 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: .devcontainer
-          file: Dockerfile.R
+          context: .
+          file: .devcontainer/Dockerfile.R
           tags: |
             ghcr.io/${{ github.repository_owner }}/r-package:${{ env.VERSION }}
             ghcr.io/${{ github.repository_owner }}/r-package:latest
