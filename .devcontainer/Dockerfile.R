@@ -1,5 +1,5 @@
 # Base Image
-FROM r-base:4.3.0
+FROM rhub/r-minimal:4.0.5
 
 # Install system dependencies
 RUN apt-get update && \
@@ -21,9 +21,11 @@ WORKDIR /app
 # Copy the R package or the current directory into the container
 COPY . /app
 
-RUN R -e "install.packages(c('devtools', 'roxygen2', 'testthat')); \
-          remotes::install_deps(dependencies=TRUE); \
-          devtools::install('.', dependencies=TRUE, keep_source=TRUE)"
+# Install R package dependencies
+RUN R -e "install.packages(c('devtools', 'roxygen2', 'testthat'))"
+
+# Install the R package
+RUN R -e "devtools::install(".", dependencies=TRUE, keep_source=TRUE)"
 
 # Default command
 CMD ["R"]
