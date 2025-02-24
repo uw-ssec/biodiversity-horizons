@@ -1,5 +1,5 @@
 # Base Image
-FROM rhub/r-minimal:4.0.5
+FROM rocker/r-ver:4.3.0
 
 # Install system dependencies
 RUN apt-get update && \
