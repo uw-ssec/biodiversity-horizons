@@ -64,12 +64,10 @@ jobs:
           $GITHUB_ENV
 
       - name: Pull Docker Image for Testing
-        run:
+        run: |
           sleep 10
-          docker pull ghcr.io/${{ github.repository_owner }}/r-package:${{
-          env.VERSION }}
+          docker pull ghcr.io/${{ github.repository_owner }}/r-package:${{env.VERSION }}
 
       - name: Run Container Tests
         run:
-          docker run --rm ghcr.io/${{ github.repository_owner }}/r-package:${{
-          env.VERSION }} R -e "devtools::test()"
+          docker run --rm ghcr.io/${{ github.repository_owner }}/r-package:${{env.VERSION }} R -e "devtools::test()"
