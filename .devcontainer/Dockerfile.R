@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     make
 
+RUN apt-get -y build-dep libcurl4-gnutls-dev
+RUN apt-get -y install libcurl4-gnutls-dev
+
 # Install R package dependencies
 RUN R -e "install.packages(c('devtools', 'roxygen2', 'testthat'))"
 
