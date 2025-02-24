@@ -1,9 +1,8 @@
 # Base Image
 FROM rocker/r-ver:4.3.0
 
-# Enable source repositories and install dependencies
-RUN sed -i 's/^#\s*\(deb-src .* main\)$/\1/' /etc/apt/sources.list && \
-    apt-get update && \
+# Install system dependencies
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libcurl4-openssl-dev \
     libssl-dev \
@@ -12,7 +11,7 @@ RUN sed -i 's/^#\s*\(deb-src .* main\)$/\1/' /etc/apt/sources.list && \
     git \
     curl \
     make \
-    libcurl4-gnutls-dev && \
+    libgnutls28-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Install R package dependencies
