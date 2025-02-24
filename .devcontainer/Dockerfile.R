@@ -1,5 +1,5 @@
 # Base Image
-FROM rocker/r-ver:4.3.0
+FROM r-base:4.3.0
 
 # Install system dependencies
 RUN apt-get update && \
