@@ -71,4 +71,5 @@ jobs:
 
       - name: Run Container Tests
         run:
-          docker run --rm ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:${{env.VERSION }} R -e "devtools::test()"
+          docker run --rm ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE
+          }}:${{env.VERSION }} R -e "devtools::test()"
