@@ -24,7 +24,7 @@ WORKDIR /app
 COPY . /app
 
 # Install the R package
-RUN R -e "devtools::install('.')"
+RUN R -e "devtools::install(".", dependencies=TRUE, keep_source=TRUE)"
 
 # Default command
 CMD ["R"]
