@@ -4,6 +4,7 @@ FROM rocker/r-ver:4.3.0
 # Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    libudunits2-dev \
     libgdal-dev \
     libcurl4-openssl-dev \
     libssl-dev \
