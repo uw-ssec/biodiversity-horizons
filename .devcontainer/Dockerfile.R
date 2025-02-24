@@ -9,11 +9,8 @@ RUN apt-get update && \
     libxml2-dev \
     build-essential \
     git \
-    curl \
-    make \
-    libgnutls28-dev && \
+    curl && \
     rm -rf /var/lib/apt/lists/*
-
 
 # Set working directory to /app
 WORKDIR /app
@@ -25,7 +22,7 @@ COPY . /app
 RUN R -e "install.packages(c('devtools', 'roxygen2', 'testthat'))"
 
 # Install the R package
-RUN R -e "devtools::install(".", dependencies=TRUE, keep_source=TRUE)"
+RUN R -e "devtools::install('.', dependencies=TRUE, keep_source=TRUE)"
 
 # Default command
 CMD ["R"]
