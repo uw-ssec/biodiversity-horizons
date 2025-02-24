@@ -14,8 +14,6 @@ RUN apt-get update && \
     libgnutls28-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Install R package dependencies
-RUN R -e "install.packages(c('devtools', 'roxygen2', 'testthat'))"
 
 # Set working directory to /app
 WORKDIR /app
@@ -23,8 +21,9 @@ WORKDIR /app
 # Copy the R package or the current directory into the container
 COPY . /app
 
-# Install the R package
-RUN R -e "devtools::install(".", dependencies=TRUE, keep_source=TRUE)"
+RUN R -e "install.packages(c('devtools', 'roxygen2', 'testthat')); \
+          remotes::install_deps(dependencies=TRUE); \
+          devtools::install('.', dependencies=TRUE, keep_source=TRUE)"
 
 # Default command
 CMD ["R"]
