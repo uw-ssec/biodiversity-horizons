@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     libgeos-dev \
     libproj-dev \
     libudunits2-dev \
+    squashfs-tools \
     && rm -rf /var/lib/apt/lists/*
 
 RUN Rscript -e "install.packages('terra', repos='https://cloud.r-project.org')"
