@@ -1,10 +1,10 @@
 #!/bin/bash
 source run_container.sh
 
-if [ $# -lt 2 ]; then        
+if [ $# -lt 2 ]; then
     echo "usage: $0 <data_dir> <output_dir> <extra-args>"
     exit 1
-fi    
+fi
 
 DATA_DIR=$1
 OUT_DIR=$2

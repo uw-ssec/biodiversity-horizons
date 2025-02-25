@@ -3,7 +3,7 @@
 CONTAINER=ghcr.io/uw-ssec/biodiversity-horizons
 
 function run_with_mounts() {
-    
+
     # run the container with the given directories mounted as volumes
     # and then pass any additional arguments to the container
     DATA_DIR=$1
@@ -25,4 +25,3 @@ function run_with_mounts() {
     -v "$OUT_DIR":/home/biodiversity-horizons/outputs \
     $CONTAINER $* # Pass any additional arguments to the Docker container
 }
-
