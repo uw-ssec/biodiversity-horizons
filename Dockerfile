@@ -33,6 +33,7 @@ COPY NAMESPACE .
 # and the image builds much faster when changing code
 RUN Rscript -e "remotes::install_local('.', dependencies=TRUE)" # Install dependencies
 COPY R ./R
+COPY utility ./utility
 RUN Rscript -e "remotes::install_local('.', dependencies=TRUE)" # install package code
 
 COPY scripts ./scripts
