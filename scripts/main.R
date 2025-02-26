@@ -170,7 +170,7 @@ run_climatearray2rds <- function(args) {
     number_of_workers = opt$workers
   )
 
-  print("Processing completed successfully!")
+  print("File converted successfully!")
 }
 
 safe_parse_opts <- function(opt_parser, args) {
