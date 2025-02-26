@@ -119,6 +119,60 @@ run_shp2rds <- function(args) {
   print("File converted successfully!")
 }
 
+run_climatearray2rds <- function(args) {
+  source("utility/convert_array_to_raster.R")
+
+  option_list <- list(
+    make_option(c("-i", "--input"),
+      type = "character",
+      help = "Directory containing .rds climate array files"
+    ),
+    make_option(c("-o", "--output"),
+      type = "character",
+      help = "Directory to save processed raster .rds files"
+    ),
+    make_option(c("-y", "--start_year"),
+      type = "integer",
+      default = 1961,
+      help = "Starting year for naming convention (default: 1961)"
+    ),
+    make_option(c("-p", "--parallel"),
+      type = "logical",
+      help = "Use parallel processing. Default is TRUE.",
+      default = TRUE
+    ),
+    make_option(c("-w", "--workers"),
+      type = "numeric",
+      help = "Number of workers to use. Default is availableCores()-1.",
+      default = availableCores()-1
+    )
+  )
+
+  # Parse command-line arguments
+  opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])
+  check_not_null(opt$input, "input")
+  check_not_null(opt$output, "output")
+
+  # Print the received arguments
+  print("Processing climate array .rds files with the following options:")
+  cat("Input Directory:", opt$input, "\n")
+  cat("Output Directory:", opt$output, "\n")
+  cat("Start Year:", opt$start_year, "\n")
+  cat("Parallel:", opt$parallel, "\n")
+  cat("Workers:", opt$workers, "\n")
+
+  # Run the climate array processing function
+  processed_raster <- process_climate_array_data(
+    input_dir = opt$input,
+    output_dir = opt$output,
+    start_year = opt$start_year,
+    use_parallel = opt$parallel,
+    number_of_workers = opt$workers
+  )
+
+  print("Processing completed successfully!")
+}
+
 safe_parse_opts <- function(opt_parser, args) {
   # Function to safely parse the options. Shows the help if there's an error.
   opt <- tryCatch(
@@ -175,6 +229,8 @@ if (cmd == "shp2rds") {
   run_exposure(args)
 } else if (cmd == "tif2rds") {
   run_tif2rds(args)
+} else if (cmd == "climatearray2rds") {
+  run_climatearray2rds(args)
 } else {
-  stop("Invalid command. Use 'shp2rds', 'tif2rds' or 'exposure'.")
+  stop("Invalid command. Use 'shp2rds', 'tif2rds', 'climatearray2rds' or 'exposure'.")
 }
