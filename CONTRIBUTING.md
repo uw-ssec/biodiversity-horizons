@@ -126,7 +126,10 @@ docker run --rm \
   -v /path/to/data-raw/:/home/biodiversity-horizons/data-raw/ \
   -v /path/to/outputs/:/home/biodiversity-horizons/outputs/ \
   biodiversity-horizons \
-  Rscript scripts/exposure_workflow.R /home/biodiversity-horizons/data-raw multicore 4
+  exposure \
+  -d /home/biodiversity-horizons/data-raw \
+  -p multicore \
+  -w 4
 ```
 
 This command:
@@ -151,7 +154,7 @@ Example:
 ```bash
 docker run --rm \
   -v $(pwd)/data-raw/:/home/biodiversity-horizons/data-raw/ \
-  biodiversity-horizons -d ./data-raw
+  biodiversity-horizons exposure -d ./data-raw
 ```
 
 ## Pull Requests
