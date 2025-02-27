@@ -33,11 +33,10 @@ COPY NAMESPACE .
 # and the image builds much faster when changing code
 RUN Rscript -e "remotes::install_local('.', dependencies=TRUE)" # Install dependencies
 COPY R ./R
+COPY utility ./utility
 RUN Rscript -e "remotes::install_local('.', dependencies=TRUE)" # install package code
 
 COPY scripts ./scripts
 
-# Run the script with "data-raw/" as path since that is where, run_container.sh will mount the data
-# We'll also use "multisession", and (availableCores()-1) workers as default
-# The user can override by passing in arguments at runtime, e.g.: "multisession" 4
+# Run the main script, which can take arguments to determine the workflow to run
 ENTRYPOINT ["Rscript", "scripts/main.R"]
