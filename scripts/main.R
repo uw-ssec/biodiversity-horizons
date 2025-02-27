@@ -17,17 +17,39 @@ parse_extent <- function(extent) {
   return(ext(extent))
 }
 
+safe_parse_opts <- function(opt_parser, args) {
+  # Function to safely parse the options. Shows the help if there's an error.
+  opt <- tryCatch(
+    {
+      opt <- parse_args(opt_parser, args = args)
+      opt
+    },
+    error = function(e) {
+      cat("Error parsing arguments:", e$message, "\n")
+      parse_args(opt_parser, args = c("--help"))
+      FALSE
+    }
+  )
+  return(opt)
+}
+
 
 run_tif2rds <- function(args) {
   source("utility/format_conversion_util.R")
   option_list <- list(
-    make_option(c("-i", "--input"), type = "character",
-                help = "Path to the input .tif file"),
-    make_option(c("-o", "--output"), type = "character",
-                help = "Path to save the output .rds file"),
-    make_option(c("-y", "--year_range"), type = "character",
-                default = "1850:2014",
-                help = "Year range as a sequence (e.g., '1850:2014')")
+    make_option(c("-i", "--input"),
+      type = "character",
+      help = "Path to the input .tif file"
+    ),
+    make_option(c("-o", "--output"),
+      type = "character",
+      help = "Path to save the output .rds file"
+    ),
+    make_option(c("-y", "--year_range"),
+      type = "character",
+      default = "1850:2014",
+      help = "Year range as a sequence (e.g., '1850:2014')"
+    )
   )
   opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])
   check_not_null(opt$input, "input")
@@ -39,11 +61,12 @@ run_tif2rds <- function(args) {
   cat("Output:", opt$output, "\n")
   cat("Year range:", opt$year_range, "\n")
 
-  climate_data <- prepare_climate_data_from_tif(input_file = opt$input,
-                                                output_file = opt$output,
-                                                year_range = year_range)
+  climate_data <- prepare_climate_data_from_tif(
+    input_file = opt$input,
+    output_file = opt$output,
+    year_range = year_range
+  )
   print("File converted successfully!")
-
 }
 
 
@@ -86,7 +109,7 @@ run_shp2rds <- function(args) {
     make_option(c("-w", "--workers"),
       type = "numeric",
       help = "Number of workers to use. Default is availableCores()-1.",
-      default = availableCores()-1
+      default = availableCores() - 1
     )
   )
 
@@ -218,6 +241,7 @@ run_exposure <- function(args) {
   exposure_time_workflow(opt$data_path, opt$plan_type, opt$workers)
 }
 
+# Main function
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
   stop("No command provided. Use 'shp2rds', 'tif2rds' or 'exposure'.")
