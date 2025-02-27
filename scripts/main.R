@@ -196,22 +196,6 @@ run_climatearray2rds <- function(args) {
   print("File converted successfully!")
 }
 
-safe_parse_opts <- function(opt_parser, args) {
-  # Function to safely parse the options. Shows the help if there's an error.
-  opt <- tryCatch(
-    {
-      opt <- parse_args(opt_parser, args = args)
-      opt
-    },
-    error = function(e) {
-      cat("Error parsing arguments:", e$message, "\n")
-      opt <- parse_args(opt_parser, args = c("--help"))
-      FALSE
-    }
-  )
-  return(opt)
-}
-
 run_exposure <- function(args) {
   source("scripts/exposure_workflow.R")
   option_list <- list(
