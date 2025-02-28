@@ -4,6 +4,6 @@ data_files:
   historical_climate: "./historical_climate_data_new.rds"
   future_climate: "./future_climate_data_new.rds"
   species: "./species_new.rds"
-exposure_result_file: "exposure_calci.rds"
+exposure_result_file: "exposure_result.rds"
 workers: 1
 plan_type: "multisession"
