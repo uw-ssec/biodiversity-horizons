@@ -1,0 +1,7 @@
+data_files:
+  historical_climate: "/Users/anujsinha/biodiversity-horizons-fork/outputs/historical_grid_asd.rds"
+  future_climate: "/Users/anujsinha/biodiversity-horizons-fork/outputs/future_grid_asd.rds"
+  species: "/Users/anujsinha/biodiversity-horizons-fork/outputs/gridded_ranges_as.rds"
+  exposure_result: "/Users/anujsinha/biodiversity-horizons-fork/outputs_2/exposure.rds"
+workers: 1
+plan_type: "multisession"
