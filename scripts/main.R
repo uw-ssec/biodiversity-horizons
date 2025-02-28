@@ -8,12 +8,17 @@ check_not_null <- function(x, name) {
   }
 }
 
+check_file_exists <- function(file_path) {
+  if (!file.exists(file_path)) {
+    cat("File does not exist:", file_path, "\n")
+    quit(status = 1)
+  }
+}
+
 # Function to read and process the YAML file
 read_yaml_file <- function(file_path) {
   # Check if the file exists
-  if (!file.exists(file_path)) {
-    stop("The specified file does not exist.")
-  }
+  check_file_exists(file_path)
 
   # Read the YAML file
   yaml_data <- yaml.load_file(file_path)
@@ -228,17 +233,21 @@ run_exposure <- function(args) {
 
 
   # Read the YAML file
-  config <- read_yaml_file(opt$input_yaml)
+  cat("input_yml:", opt$input_yml, "\n")
+  config <- read_yaml_file(opt$input_yml)
 
-  data_path <- config$data_files
+  data_path <- dirname(opt$input_yml)
+  data_files <- config$data_files
+
   # Ensure data_path is provided
+  cat("data_path:", data_path, "\n")
   check_not_null(data_path, "data_path")
 
   # Extract arguments from yml
-  historical_climate_path <- data_path$historical_climate
-  future_climate_path <- data_path$future_climate
-  species_path <- data_path$species
-  exposure_result_path <- data_path$exposure_result
+  historical_climate_file <- data_files$historical_climate
+  future_climate_file <- data_files$future_climate
+  species_file <- data_files$species
+  exposure_result_file <- config$exposure_result_file
 
   plan_type <-
     if (!is.null(config$plan_type))
@@ -252,27 +261,31 @@ run_exposure <- function(args) {
     else
       (parallel::detectCores() - 1)
 
-  check_not_null(historical_climate_path, "historical_climate")
-  check_not_null(future_climate_path, "future_climate")
-  check_not_null(species_path, "species")
-  check_not_null(exposure_result_path, "exposure_result")
+  historical_climate_file_path <- file.path(data_path, historical_climate_file)
+  future_climate_file_path <- file.path(data_path, future_climate_file)
+  species_file_path <- file.path(data_path, species_file)
+
+  check_file_exists(historical_climate_file_path)
+  check_file_exists(future_climate_file_path)
+  check_file_exists(species_file_path)
+  check_not_null(exposure_result_file, "exposure_result")
 
 
   print("Calculating exposure using the following options:")
-  cat("Historical climate path:", historical_climate_path, "\n")
-  cat("Future climate path:", future_climate_path, "\n")
-  cat("Species path:", species_path, "\n")
-  cat("Exposure result path:", exposure_result_path, "\n")
+  cat("Historical climate path:", historical_climate_file_path, "\n")
+  cat("Future climate path:", future_climate_file_path, "\n")
+  cat("Species path:", species_file_path, "\n")
+  cat("Exposure result File:", exposure_result_file, "\n")
   cat("Plan type:", plan_type, "\n")
   cat("Workers:", workers, "\n")
 
   exposure_time_workflow(
-    historical_climate_path = historical_climate_path,
-    future_climate_path = future_climate_path,
-    species_path = species_path,
+    historical_climate_filepath = historical_climate_file_path,
+    future_climate_filepath = future_climate_file_path,
+    species_filepath = species_file_path,
     plan_type = plan_type,
     workers = workers,
-    exposure_result_path = exposure_result_path
+    exposure_result_file = exposure_result_file
   )
 }
 

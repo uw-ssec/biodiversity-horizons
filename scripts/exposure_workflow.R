@@ -13,12 +13,12 @@ library(future)
 log_threshold(INFO)
 log_info("Starting exposure workflow")
 exposure_time_workflow <- function(
-  historical_climate_path,
-  future_climate_path,
-  species_path,
+  historical_climate_filepath,
+  future_climate_filepath,
+  species_filepath,
   plan_type,
   workers,
-  exposure_result_path
+  exposure_result_file
 ) {
   if (is.null(workers)) {
     workers <- availableCores() - 1
@@ -26,9 +26,9 @@ exposure_time_workflow <- function(
   }
 # Load data
 log_info("Loading data...")
-historical_climate_df <- readRDS(historical_climate_path)
-future_climate_df     <- readRDS(future_climate_path)
-primates_range_data   <- readRDS(species_path)
+historical_climate_df <- readRDS(historical_climate_filepath)
+future_climate_df     <- readRDS(future_climate_filepath)
+primates_range_data   <- readRDS(species_filepath)
 log_info("Data loaded successfully.")
 
 # Load all functions from the package
@@ -101,16 +101,16 @@ log_info("Final data frame contains {nrow(res_final)} rows.")
 print(res_final)
 
 # 6. Save the output to "outputs/" directory
-output_dir <- dirname(exposure_result_path)
+output_dir <- "outputs"
 if (!dir.exists(output_dir)) {
   dir.create(output_dir, recursive = TRUE)
 }
 
 saveRDS(
   res_final,
-  exposure_result_path
+  file.path(output_dir, exposure_result_file)
 )
-log_info("Saved results to {exposure_result_path}")
+log_info("Saved results to {file.path(output_dir, exposure_result_file)}")
 
 # Reset parallel processing plan
 future::plan("sequential")
