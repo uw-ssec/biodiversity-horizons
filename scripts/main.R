@@ -1,10 +1,25 @@
 library(optparse)
+library(yaml)
 
 check_not_null <- function(x, name) {
   if (is.null(x)) {
     cat(sprintf("Argument '--%s' is required.", name), "\n")
     quit(status = 1)
   }
+}
+
+# Function to read and process the YAML file
+read_yaml_file <- function(file_path) {
+  # Check if the file exists
+  if (!file.exists(file_path)) {
+    stop("The specified file does not exist.")
+  }
+
+  # Read the YAML file
+  yaml_data <- yaml.load_file(file_path)
+
+  # Return the parsed YAML data
+  return(yaml_data)
 }
 
 parse_extent <- function(extent) {
@@ -197,32 +212,68 @@ run_climatearray2rds <- function(args) {
 }
 
 run_exposure <- function(args) {
+
+  if (length(args) < 2) {
+    stop("No YAML file provided.")
+  }
+
   source("scripts/exposure_workflow.R")
   option_list <- list(
-    make_option(c("-d", "--data_path"),
+    make_option(c("-i", "--input_yml"),
       type = "character",
-      help = "Data path with input files"
-    ),
-    make_option(c("-p", "--plan_type"),
-      type = "character",
-      help = "The plan type to use to parallel processing. Default is multisession.",
-      default = "multisession"
-    ),
-    make_option(c("-w", "--workers"),
-      type = "numeric",
-      help = "Number of workers to use (uses availableCores()-1 if not provided).",
-      default = NULL
+      help = "input config yml filepath"
     )
   )
-
   opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])
-  check_not_null(opt$data_path, "data_path")
+
+
+  # Read the YAML file
+  config <- read_yaml_file(opt$input_yaml)
+
+  data_path <- config$data_files
+  # Ensure data_path is provided
+  check_not_null(data_path, "data_path")
+
+  # Extract arguments from yml
+  historical_climate_path <- data_path$historical_climate
+  future_climate_path <- data_path$future_climate
+  species_path <- data_path$species
+  exposure_result_path <- data_path$exposure_result
+
+  plan_type <-
+    if (!is.null(config$plan_type))
+      config$plan_type
+    else
+      "multisession"
+
+  workers <-
+    if (!is.null(config$workers))
+      config$workers
+    else
+      (parallel::detectCores() - 1)
+
+  check_not_null(historical_climate_path, "historical_climate")
+  check_not_null(future_climate_path, "future_climate")
+  check_not_null(species_path, "species")
+  check_not_null(exposure_result_path, "exposure_result")
+
 
   print("Calculating exposure using the following options:")
-  cat("Data path:", opt$data_path, "\n")
-  cat("Plan type:", opt$plan_type, "\n")
-  cat("Workers:", opt$workers, "\n")
-  exposure_time_workflow(opt$data_path, opt$plan_type, opt$workers)
+  cat("Historical climate path:", historical_climate_path, "\n")
+  cat("Future climate path:", future_climate_path, "\n")
+  cat("Species path:", species_path, "\n")
+  cat("Exposure result path:", exposure_result_path, "\n")
+  cat("Plan type:", plan_type, "\n")
+  cat("Workers:", workers, "\n")
+
+  exposure_time_workflow(
+    historical_climate_path = historical_climate_path,
+    future_climate_path = future_climate_path,
+    species_path = species_path,
+    plan_type = plan_type,
+    workers = workers,
+    exposure_result_path = exposure_result_path
+  )
 }
 
 # Main function
