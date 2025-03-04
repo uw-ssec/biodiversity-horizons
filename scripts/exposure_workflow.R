@@ -12,51 +12,34 @@ library(future)
 # Initialize logger
 log_threshold(INFO)
 log_info("Starting exposure workflow")
-exposure_time_workflow <- function(path, plan_type, workers) {
+exposure_time_workflow <- function(
+  historical_climate_filepath,
+  future_climate_filepath,
+  species_filepath,
+  plan_type,
+  workers,
+  exposure_result_file
+) {
   if (is.null(workers)) {
     workers <- availableCores() - 1
     log_info("Number of workers not provided. Using {workers} workers.")
   }
 # Load data
 log_info("Loading data...")
-historical_climate <- readRDS(file.path(path, "historical_climaate_data.rds"))
-future_climate     <- readRDS(file.path(path, "future_climaate_data.rds"))
-grid               <- readRDS(file.path(path, "grid.rds"))
-primates_shp       <- readRDS(file.path(path, "primates_shapefiles.rds"))
+historical_climate_df <- readRDS(historical_climate_filepath)
+future_climate_df     <- readRDS(future_climate_filepath)
+primates_range_data   <- readRDS(species_filepath)
 log_info("Data loaded successfully.")
-
-# Log data details
-log_info("Historical climate data has {nrow(historical_climate)} rows.")
-log_info("Future climate data has {nrow(future_climate)} rows.")
-log_info("Grid data contains {nrow(grid)} rows.")
-log_info("Primates shapefile contains {nrow(primates_shp)} rows.")
 
 # Load all functions from the package
 log_info("Loading package functions...")
 devtools::load_all()
 log_info("Package functions loaded successfully.")
 
-# 1. Transform the distribution polygons to match the grid
-log_info("Transforming distribution polygons to match the grid.")
-primates_range_data <- prepare_range(primates_shp, grid)
-log_info("Processed {length(primates_range_data)} species.")
+log_info("Primate Range Data has {length(primates_range_data)} species.")
+log_info("Historical climate Data has {nrow(historical_climate_df)} rows.")
+log_info("Future climate Data has {nrow(future_climate_df)} rows.")
 
-# 2. Extract climate data using the grid
-log_info("Extracting historical climate data...")
-historical_climate_df <- extract_climate_data(historical_climate, grid)
-log_info(
-  "Historical climate extraction done: {nrow(historical_climate_df)} rows."
-)
-
-log_info("Extracting future climate data...")
-future_climate_df <- extract_climate_data(future_climate, grid)
-log_info("Future climate extraction done: {nrow(future_climate_df)} rows.")
-
-# Rename columns
-log_info("Renaming columns for climate data.")
-colnames(historical_climate_df) <- c("world_id", 1850:2014)
-colnames(future_climate_df) <- c("world_id", 2015:2100)
-log_info("Column renaming complete.")
 
 # 3. Compute the thermal limits for each species
 log_info("Computing thermal limits for each species using {workers} workers and a '{plan_type}' parallelization plan.")
@@ -125,11 +108,11 @@ if (!dir.exists(output_dir)) {
 
 saveRDS(
   res_final,
-  file.path(output_dir, "res_final.rds")
+  file.path(output_dir, exposure_result_file)
 )
-log_info("Saved results to {file.path(output_dir, 'res_final.rds')}")
+log_info("Saved results to {file.path(output_dir, exposure_result_file)}")
 
 # Reset parallel processing plan
 future::plan("sequential")
-log_info("VISS Sample Data script completed successfully.")
+log_info("Exposure Workflow completed successfully.")
 }

@@ -1,0 +1,9 @@
+# This input_config.yml file can be used as a template within your own INPUT directory
+# Please ensure that the path to the data files are at the SAME LEVEL or SUB-DIRECTORY level as the input_config.yml file (INPUT_directory).
+data_files:
+  historical_climate: "./historical_climate_data_new.rds"
+  future_climate: "./future_climate_data_new.rds"
+  species: "./species_new.rds"
+exposure_result_file: "exposure_result.rds"
+# workers: 1   # This parameter can be used to use a specific number of workers instead of the system default
+plan_type: "multisession"
