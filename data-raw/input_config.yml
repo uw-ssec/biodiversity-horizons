@@ -5,5 +5,5 @@ data_files:
   future_climate: "./future_climate_data_new.rds"
   species: "./species_new.rds"
 exposure_result_file: "exposure_result.rds"
-workers: 1
+# workers: 1   # This parameter can be used to use a specific number of workers instead of the system default
 plan_type: "multisession"
