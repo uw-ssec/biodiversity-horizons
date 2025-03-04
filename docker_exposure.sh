@@ -2,7 +2,7 @@
 source run_container.sh
 
 if [ $# -lt 2 ]; then
-    echo "usage: $0 <input_config_yml_file_path> <output_dir> <extra-args>"
+    echo "usage: $0 <input_config_yml_file_path> <output_dir>"
     exit 1
 fi
 
