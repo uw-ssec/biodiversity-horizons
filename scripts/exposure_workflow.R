@@ -36,9 +36,9 @@ log_info("Loading package functions...")
 devtools::load_all()
 log_info("Package functions loaded successfully.")
 
-log_info("Processed {length(primates_range_data)} species.")
-log_info("Historical climate extraction done: {nrow(historical_climate_df)} rows.")
-log_info("Future climate extraction done: {nrow(future_climate_df)} rows.")
+log_info("Primate Range Data has {length(primates_range_data)} species.")
+log_info("Historical climate Data has {nrow(historical_climate_df)} rows.")
+log_info("Future climate Data has {nrow(future_climate_df)} rows.")
 
 
 # 3. Compute the thermal limits for each species

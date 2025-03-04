@@ -1,5 +1,9 @@
 library(optparse)
 library(yaml)
+library(logger)
+
+# Initialize logger
+log_threshold(INFO)
 
 check_not_null <- function(x, name) {
   if (is.null(x)) {
@@ -218,10 +222,6 @@ run_climatearray2rds <- function(args) {
 
 run_exposure <- function(args) {
 
-  if (length(args) < 2) {
-    stop("No YAML file provided.")
-  }
-
   source("scripts/exposure_workflow.R")
   option_list <- list(
     make_option(c("-i", "--input_yml"),
@@ -233,7 +233,8 @@ run_exposure <- function(args) {
 
 
   # Read the YAML file
-  cat("input_yml:", opt$input_yml, "\n")
+  log_info("input_yml:", opt$input_yml, "\n")
+  check_not_null(opt$input_yml, "input_yml")
   config <- read_yaml_file(opt$input_yml)
 
   data_path <- dirname(opt$input_yml)
@@ -268,16 +269,16 @@ run_exposure <- function(args) {
   check_file_exists(historical_climate_file_path)
   check_file_exists(future_climate_file_path)
   check_file_exists(species_file_path)
-  check_not_null(exposure_result_file, "exposure_result")
+  check_not_null(exposure_result_file, "input_yml 'exposure_result_file'")
 
 
-  print("Calculating exposure using the following options:")
-  cat("Historical climate path:", historical_climate_file_path, "\n")
-  cat("Future climate path:", future_climate_file_path, "\n")
-  cat("Species path:", species_file_path, "\n")
-  cat("Exposure result File:", exposure_result_file, "\n")
-  cat("Plan type:", plan_type, "\n")
-  cat("Workers:", workers, "\n")
+  log_info("Calculating exposure using the following options:")
+  log_info("Historical climate path:", historical_climate_file_path, "\n")
+  log_info("Future climate path:", future_climate_file_path, "\n")
+  log_info("Species path:", species_file_path, "\n")
+  log_info("Exposure result File:", exposure_result_file, "\n")
+  log_info("Plan type:", plan_type, "\n")
+  log_info("Workers:", workers, "\n")
 
   exposure_time_workflow(
     historical_climate_filepath = historical_climate_file_path,
