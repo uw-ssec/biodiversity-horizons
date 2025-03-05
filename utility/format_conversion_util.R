@@ -34,9 +34,11 @@ prepare_range_data_from_shp_file <- function(input_file_path, grid, realm="abcd"
 
   # Set Up Parallel Processing
   if (use_parallel) {
-    plan("multisession", workers = number_of_workers)
+    log_info("Using parallel processing...")
+    plan(multisession, workers = number_of_workers)
   } else {
-    plan("sequential")
+    log_info("Using sequential processing...")
+    plan(sequential)
   }
 
   # 1. Filter Range Data
@@ -192,5 +194,7 @@ create_grid <- function(extent_vals = c(-180, 180, -90, 90),
     st_as_stars() %>%
     st_as_sf()
 
+  # Rename the column to "world_id" - this is required in docker container execution.
+  names(grid)[names(grid) == "values"] <- "world_id"
   return(grid)
 }
