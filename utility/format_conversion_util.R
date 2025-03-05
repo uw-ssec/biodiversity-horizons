@@ -186,15 +186,20 @@ create_grid <- function(extent_vals = c(-180, 180, -90, 90),
             resolution = resolution,
             crs = crs)
 
-  # Assign unique IDs to grid cells
-  r$world_id <- 1:ncell(r)
+  # Create a new layer for world_id
+  world_id_layer <- r  # Copy the raster structure
+  values(world_id_layer) <- 1:ncell(world_id_layer)  # Assign unique IDs
+
+  # Combine layers into a multi-layer raster
+  r <- c(world_id_layer, r)
+
+  # Rename layers
+  names(r) <- c("world_id", "geometry")
 
   # Convert raster to an sf object
   grid <- r %>%
     st_as_stars() %>%
     st_as_sf()
 
-  # Rename the column to "world_id" - this is required in docker container execution.
-  names(grid)[names(grid) == "values"] <- "world_id"
   return(grid)
 }
