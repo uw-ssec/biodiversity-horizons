@@ -34,9 +34,11 @@ prepare_range_data_from_shp_file <- function(input_file_path, grid, realm="abcd"
 
   # Set Up Parallel Processing
   if (use_parallel) {
-    plan("multisession", workers = number_of_workers)
+    log_info("Using parallel processing...")
+    plan(multisession, workers = number_of_workers)
   } else {
-    plan("sequential")
+    log_info("Using sequential processing...")
+    plan(sequential)
   }
 
   # 1. Filter Range Data
@@ -184,8 +186,15 @@ create_grid <- function(extent_vals = c(-180, 180, -90, 90),
             resolution = resolution,
             crs = crs)
 
-  # Assign unique IDs to grid cells
-  r$world_id <- 1:ncell(r)
+  # Create a new layer for world_id
+  world_id_layer <- r  # Copy the raster structure
+  values(world_id_layer) <- 1:ncell(world_id_layer)  # Assign unique IDs
+
+  # Combine layers into a multi-layer raster
+  r <- c(world_id_layer, r)
+
+  # Rename layers
+  names(r) <- c("world_id", "geometry")
 
   # Convert raster to an sf object
   grid <- r %>%
