@@ -171,17 +171,11 @@ apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw /mnt/b
 cd /home/biodiversity-horizons
 ```
 
-**Step 7: Run the R script**
+**Step 7: Run the R exposure calculation script (you can modify the arguments by
+updating the input_config.yml file)**
 
 ```bash
-Rscript scripts/main.R exposure --data data-raw/
-```
-
-**(Optional) Step 8: Run the R script with custom arguments (e.g., using 2
-workers)**
-
-```bash
-Rscript scripts/exposure_workflow.R -d /path/to/data -p multisession -w 2
+Rscript scripts/main.R exposure -i data-raw/input_config.yml
 ```
 
 ## Running and Developing
