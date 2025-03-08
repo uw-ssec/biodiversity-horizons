@@ -1,6 +1,6 @@
 Package: biodiversityhorizons
 Title: Biodiversity Horizons Package
-Version: 0.0.0.9003
+Version: 0.0.0.9004
 Authors@R:
     person("Ishika", "Khandelwal", , "ishikakhandelwal02@gmail.com", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
