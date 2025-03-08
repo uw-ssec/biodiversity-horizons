@@ -88,43 +88,38 @@ echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 
   **2. Use the included data-raw/ folder. It contains sample .rds files.**
 
-### 4. Run the Container Using run_container.sh
+### 4. Run the commands on the docker container using run_container.sh
 
-We recommend using the script `run_container.sh` for simplicity. It mounts your
-data and output folders to the container and executes the main R script.
+- Running conversion utilities:
+  - .shp to .rds (see below on how to pass additional arguments)
+    - use -e or --extent for extent
+    - use -r or --resolution for resolution
+    - use -c or --crs for crs
+    - use -m or --realm for realm
+    - use -p or --parallel for parallel
+    - use -w or --workers for workers
+    ```
+    sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
+    ```
+  - .tif to .rds
+    ```
+    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
+    ```
+    or (if range is an argument)
+    ```
+    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
+    ```
+- Running exposure workflow:
 
-- Ensure the script is executable:
+  - Identify your directories:
+    - A data folder with the input_config.yml and .rds files (either your own or
+      the cloned data-raw/)
+    - An outputs directory for script results
+    - Example command shown below:
 
   ```
-  chmod +x run_container.sh
+  sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
   ```
-
-- Identify your directories:
-
-  - A data folder with .rds files (either your own or the cloned data-raw/)
-  - An outputs directory for script results
-
-- Run the container:
-
-  ```
-  ./run_container.sh /absolute/path/to/data-raw /absolute/path/to/outputs
-  ```
-
-  - Replace `/absolute/path/to/data-raw` or `/absolute/path/to/data-outputs`
-    with the paths on your machine.
-
-  - This mounts your local data-raw folder into the container and runs the
-    default script.
-
-### 5. Passing Additional Arguments
-
-You can pass custom arguments (e.g., parallel plan, workers), example:
-
-```
-./run_container.sh /absolute/path/to/data-raw /absolute/path/to/outputs multisession 4
-```
-
-These extra arguments are forwarded to the R script inside the container.
 
 ## Setup and Run Apptainer
 
