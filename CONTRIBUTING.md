@@ -62,28 +62,48 @@ Rscript scripts/main.R   # will show the sub-commands supported
 Rscript scripts/main.R exposure --help # help for the exposure workflow
 ```
 
-You can execute the exposure command as follows
+Ensure that your terminal is at the correct directory level.
 
-```bash
-Rscript scripts/main.R exposure --data data-raw/
-```
+- Running conversion utilities:
 
-This will use:
+  - .shp to .rds (see below on how to pass additional arguments)
 
-- **path** ="data-raw/"
-- **plan_type** ="multisession"
-- **workers** =availableCores() - 1
+    - use -e or --extent for extent
+    - use -r or --resolution for resolution
+    - use -c or --crs for crs
+    - use -m or --realm for realm
+    - use -p or --parallel for parallel
+    - use -w or --workers for workers
 
-#### Pass Custom Arguments: Specify custom arguments (path, plan, workers):
+    ```
+    Rscript scripts/main.R shp2rds -i "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" -o "./outputs/species_test_op.rds"
+    ```
 
-```bash
-Rscript scripts/exposure_workflow.R -d /path/to/data -p multicore -w 4
-```
+  - .tif to .rds
+    ```
+    Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/historical.tif" -o "./outputs/historical_data_op.rds"
+    ```
+    or (if range is an argument)
+    ```
+    Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/ssp585.tif" -o "./outputs/future_data_op.rds" -y "2015:2100"
+    ```
+
+- Running exposure calculation workflow:
+  - Identify your directories:
+    - A data folder with the input_config.yml and .rds files (either your own or
+      the cloned data-raw/ and check input_config.yml)
+    - An outputs directory for script results
+    - You can update arguments by updating the input_config.yml.
+    - If you face error running the below command - try updating the "workers"
+      to 1 in the input_config.yml and rerun below command.
+  ```
+  Rscript scripts/main.R exposure -i data-raw/input_config.yml
+  ```
 
 ### Step 2: Output Files
 
 The script processes the data and saves the output files in the `outputs/`
-directory. The primary result file is `res_final.rds`.
+directory. The primary result file is `exposure_result.rds`.
 
 ## Using the Package with Docker
 
@@ -91,71 +111,48 @@ If you prefer a containerized setup, you can use Docker to run the project.
 
 ### Step 1: Build the Docker Image
 
-Use the provided `Dockerfile` to build the image:
+Use the provided `Dockerfile` to build the image and update the CONTAINER
+variable with built image name in run_container.sh:
 
 ```bash
 docker build -t biodiversity-horizons .
 ```
 
-### Step 2: Run the Docker Container
+### Step 2a: Run the commands on the docker container using run_container.sh
 
-#### Run with Defaults
+- Running conversion utilities:
 
-Run the container and mount your local data directory to the container’s
-`data-raw/` directory:
+  - .shp to .rds (see below on how to pass additional arguments)
 
-```bash
-docker run --rm \
-  -v /path/to/data-raw/:/home/biodiversity-horizons/data-raw/ \
-  biodiversity-horizons
-```
+    - use -e or --extent for extent
+    - use -r or --resolution for resolution
+    - use -c or --crs for crs
+    - use -m or --realm for realm
+    - use -p or --parallel for parallel
+    - use -w or --workers for workers
 
-This will:
+    ```
+    sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
+    ```
 
-- Mount your local data-raw/ directory to
-  `/home/biodiversity-horizons/data-raw/` inside the container.
-- Execute the script using the default arguments.
+  - .tif to .rds
+    ```
+    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
+    ```
+    or (if range is an argument)
+    ```
+    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
+    ```
 
-#### Pass Custom Arguments
-
-You can pass custom arguments to the script by appending them to the docker run
-command. For example:
-
-```bash
-docker run --rm \
-  -v /path/to/data-raw/:/home/biodiversity-horizons/data-raw/ \
-  -v /path/to/outputs/:/home/biodiversity-horizons/outputs/ \
-  biodiversity-horizons \
-  exposure \
-  -d /home/biodiversity-horizons/data-raw \
-  -p multicore \
-  -w 4
-```
-
-This command:
-
-- Mounts local `data-raw/` directory to `/home/biodiversity-horizons/data-raw/`
-  inside the container.
-- Mounts local `outputs/` directory to `/home/biodiversity-horizons/outputs/`
-  inside the container.
-- Passes custom arguments to the script:
-  - `/home/biodiversity-horizons/data-raw`: Path to the data directory.
-  - `multicore`: Parallelization plan.
-  - `4`: Number of workers.
-
-### Note:
-
-If your current working directory already contains the `data-raw/` folder, you
-can simplify the command by replacing `/path/to/data-raw/` with
-`$(pwd)/data-raw/`:
-
-Example:
-
-```bash
-docker run --rm \
-  -v $(pwd)/data-raw/:/home/biodiversity-horizons/data-raw/ \
-  biodiversity-horizons exposure -d ./data-raw
-```
+- Running exposure workflow:
+  - Identify your directories:
+    - A data folder with the input_config.yml and .rds files (either your own or
+      the cloned data-raw/)
+    - An outputs directory for script results
+    - You can update arguments by updating the input_config.yml.
+  ```
+  sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+  ```
 
 ## Pull Requests
 
