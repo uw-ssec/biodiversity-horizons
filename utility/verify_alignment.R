@@ -1,3 +1,5 @@
+library(terra)
+
 # Load processed BIEN data
 bien_data <- readRDS("~/Desktop/home/bsc23001/projects/bien_ranges/processed/Aa mathewsii_processed.rds")
 str(bien_data)
