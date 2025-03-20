@@ -1,0 +1,20 @@
+{
+    "name": "biodiversity-horizons-dev",
+    "image": "ghcr.io/uw-ssec/r-bio-div-base:1.1",  // replace with correct GHCR image
+    
+    "customizations": {
+      "vscode": {
+        "extensions": ["REditorSupport.r", "ms-vscode-remote.remote-ssh"],
+        "settings": {
+          "terminal.integrated.defaultProfile.linux": "bash"
+        }
+      }
+    },
+    "postCreateCommand": "echo '✅ Codespace is ready! Proceed to generate SSH key next.'",
+    
+    "hostRequirements": {
+      "cpus": 4,
+      "memory": "16gb",
+      "storage": "32gb"
+    }
+  }
