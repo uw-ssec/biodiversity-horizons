@@ -88,7 +88,7 @@ echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 
   **2. Use the included data-raw/ folder. It contains sample .rds files.**
 
-  **3. [Optional: If the folder does not exist] Run:** `mkdir outputs`
+  **3. [Optional: If the folder does not exist] Run:** `mkdir -p outputs`
 
 ### 4. Run the commands on the docker container using run_container.sh
 
