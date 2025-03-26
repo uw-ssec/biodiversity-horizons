@@ -1,6 +1,6 @@
 #!/bin/bash
 # CONTAINER=biodiv # for development, change this to the name of your local Docker ccontainer build
-CONTAINER=ghcr.io/uw-ssec/biodiversity-horizons
+CONTAINER=ghcr.io/uw-ssec/biodiversityhorizons
 
 function run_with_mounts() {
 
