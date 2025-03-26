@@ -58,16 +58,20 @@ ls -l /gscratch/scrubbed/<UWNetid>/
 ```
 cd ~/Desktop/biodiversity-horizons/
 ```
+
 - If it does not exist, create `outputs/` directory.
+
 ```
 mkdir outputs
 ```
 
-- Use the `scp` command to copy the entire `data-raw/` and `outputs/` folder to Hyak:
+- Use the `scp` command to copy the entire `data-raw/` and `outputs/` folder to
+  Hyak:
 
 ```
 scp -r data-raw <UWNetid>@klone.hyak.uw.edu:/gscratch/scrubbed/<UWNetid>/
 ```
+
 ```
 scp -r outputs <UWNetid>@klone.hyak.uw.edu:/gscratch/scrubbed/<UWNetid>/
 ```
@@ -82,11 +86,13 @@ Enter your Hyak password when prompted.
 ssh <UWNetid>@klone.hyak.uw.edu
 ```
 
-- Check if the `data-raw/` and `outputs/` directory is present in your Hyak storage:
+- Check if the `data-raw/` and `outputs/` directories are present in your Hyak
+  storage:
 
 ```
 ls -l /gscratch/scrubbed/<UWNetid>/data-raw/
 ```
+
 ```
 ls -l /gscratch/scrubbed/<UWNetid>/outputs/
 ```
@@ -132,11 +138,13 @@ singularity shell --bind /gscratch/scrubbed/<UWNetid>/data-raw:/home/biodiversit
 
 You should now see the `Apptainer>` prompt.
 
-Inside the Apptainer shell, verify the `data-raw/` and `outputs/` folder is available:
+Inside the Apptainer shell, verify the `data-raw/` and `outputs/` folder is
+available:
 
 ```
 ls -l /home/biodiversity-horizons/data-raw/
 ```
+
 ```
 ls -l /home/biodiversity-horizons/outputs/
 ```
