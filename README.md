@@ -62,7 +62,7 @@ If pulling fails with a `“denied”` error, generate a
 echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 ```
 
-### 3. Obtain or Prepare your `data-raw/` folder
+### 3. Obtain or Prepare your `data-raw/` and `outputs/` folder
 
 - #### Option A: Using Your Own Data
 
@@ -87,6 +87,8 @@ echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
   ```
 
   **2. Use the included data-raw/ folder. It contains sample .rds files.**
+ 
+  **3. [Optional: If the folder does not exist] Run:** ```mkdir outputs```
 
 ### 4. Run the commands on the docker container using run_container.sh
 
@@ -155,7 +157,7 @@ ls -l /mnt/biodiversityhorizons.sif
 **Step 5: Run Apptainer shell and mount required directories**
 
 ```
-apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw /mnt/biodiversityhorizons.sif
+apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw,/mnt/outputs:/home/biodiversity-horizons/outputs /mnt/biodiversityhorizons.sif
 ```
 
 ### Inside Apptainer Shell:
@@ -165,6 +167,16 @@ apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw /mnt/b
 ```
 cd /home/biodiversity-horizons
 ```
+
+Inside the Apptainer shell, verify the `data-raw/` and `outputs/` folder is available:
+
+```
+ls -l /home/biodiversity-horizons/data-raw/
+```
+```
+ls -l /home/biodiversity-horizons/outputs/
+```
+
 
 **Step 7: Run the R exposure calculation script (you can modify the arguments by
 updating the input_config.yml file)**
