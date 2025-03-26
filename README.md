@@ -47,7 +47,7 @@ containerized environment, ensuring consistent R dependencies.
 ### 2. Pull the Docker Image
 
 ```
-docker pull ghcr.io/uw-ssec/biodiversity-horizons:latest
+docker pull ghcr.io/uw-ssec/biodiversityhorizons:latest
 ```
 
 If this succeeds, the image is downloaded locally.
@@ -143,19 +143,19 @@ docker run --rm -it --privileged \
 **Step 3: Pull and convert the Docker image into a .sif file for Apptainer**
 
 ```
-apptainer pull /mnt/biodiversity-horizons.sif docker://ghcr.io/uw-ssec/biodiversity-horizons:latest
+apptainer pull /mnt/biodiversityhorizons.sif docker://ghcr.io/uw-ssec/biodiversityhorizons:latest
 ```
 
 **Step 4: Verify the .sif file was created**
 
 ```
-ls -l /mnt/biodiversity-horizons.sif
+ls -l /mnt/biodiversityhorizons.sif
 ```
 
 **Step 5: Run Apptainer shell and mount required directories**
 
 ```
-apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw /mnt/biodiversity-horizons.sif
+apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw /mnt/biodiversityhorizons.sif
 ```
 
 ### Inside Apptainer Shell:
