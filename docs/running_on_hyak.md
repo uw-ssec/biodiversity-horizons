@@ -138,7 +138,7 @@ singularity shell --bind /gscratch/scrubbed/<UWNetid>/data-raw:/home/biodiversit
 
 You should now see the `Apptainer>` prompt.
 
-Inside the Apptainer shell, verify the `data-raw/` and `outputs/` folder is
+Inside the Apptainer shell, verify the `data-raw/` and `outputs/` folders are
 available:
 
 ```

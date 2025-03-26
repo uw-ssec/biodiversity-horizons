@@ -62,7 +62,7 @@ If pulling fails with a `“denied”` error, generate a
 echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 ```
 
-### 3. Obtain or Prepare your `data-raw/` and `outputs/` folder
+### 3. Obtain or Prepare your `data-raw/` and `outputs/` folders
 
 - #### Option A: Using Your Own Data
 
