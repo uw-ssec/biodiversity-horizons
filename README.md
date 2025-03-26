@@ -92,6 +92,18 @@ echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 
 ### 4. Run the commands on the docker container using run_container.sh
 
+- Running exposure workflow:
+
+  - Identify your directories:
+    - A data folder with the input_config.yml and .rds files (either your own or
+      the cloned data-raw/)
+    - An outputs directory for script results
+    - Example command shown below:
+
+  ```
+  sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+  ```
+
 - Running conversion utilities:
   - .shp to .rds (see below on how to pass additional arguments)
     - use -e or --extent for extent
@@ -111,17 +123,6 @@ echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
     ```
     sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
     ```
-- Running exposure workflow:
-
-  - Identify your directories:
-    - A data folder with the input_config.yml and .rds files (either your own or
-      the cloned data-raw/)
-    - An outputs directory for script results
-    - Example command shown below:
-
-  ```
-  sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
-  ```
 
 ## Setup and Run Apptainer
 

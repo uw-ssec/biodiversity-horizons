@@ -120,6 +120,15 @@ docker build -t biodiversityhorizons .
 
 ### Step 2a: Run the commands on the docker container using run_container.sh
 
+- Running exposure workflow:
+  - Identify your directories:
+    - A data folder with the input_config.yml and .rds files (either your own or
+      the cloned data-raw/)
+    - An outputs directory for script results
+    - You can update arguments by updating the input_config.yml.
+  ```
+  sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+  ```
 - Running conversion utilities:
 
   - .shp to .rds (see below on how to pass additional arguments)
@@ -143,16 +152,6 @@ docker build -t biodiversityhorizons .
     ```
     sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
     ```
-
-- Running exposure workflow:
-  - Identify your directories:
-    - A data folder with the input_config.yml and .rds files (either your own or
-      the cloned data-raw/)
-    - An outputs directory for script results
-    - You can update arguments by updating the input_config.yml.
-  ```
-  sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
-  ```
 
 ## Pull Requests
 
