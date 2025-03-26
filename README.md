@@ -92,37 +92,38 @@ echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 
 ### 4. Run the commands on the docker container using run_container.sh
 
-- Running exposure workflow:
+#### Running exposure workflow:
 
-  - Identify your directories:
-    - A data folder with the input_config.yml and .rds files (either your own or
-      the cloned data-raw/)
-    - An outputs directory for script results
-    - Example command shown below:
+- Identify your directories:
+  - A data folder with the input_config.yml and .rds files (either your own or
+    the cloned data-raw/)
+  - An outputs directory for script results
+  - Example command shown below:
 
+```
+sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+```
+
+#### Running conversion utilities:
+
+- .shp to .rds (see below on how to pass additional arguments)
+  - use -e or --extent for extent
+  - use -r or --resolution for resolution
+  - use -c or --crs for crs
+  - use -m or --realm for realm
+  - use -p or --parallel for parallel
+  - use -w or --workers for workers
   ```
-  sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+  sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
   ```
-
-- Running conversion utilities:
-  - .shp to .rds (see below on how to pass additional arguments)
-    - use -e or --extent for extent
-    - use -r or --resolution for resolution
-    - use -c or --crs for crs
-    - use -m or --realm for realm
-    - use -p or --parallel for parallel
-    - use -w or --workers for workers
-    ```
-    sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
-    ```
-  - .tif to .rds
-    ```
-    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
-    ```
-    or (if range is an argument)
-    ```
-    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
-    ```
+- .tif to .rds
+  ```
+  sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
+  ```
+  or (if range is an argument)
+  ```
+  sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
+  ```
 
 ## Setup and Run Apptainer
 

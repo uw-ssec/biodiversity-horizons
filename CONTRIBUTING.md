@@ -64,40 +64,42 @@ Rscript scripts/main.R exposure --help # help for the exposure workflow
 
 Ensure that your terminal is at the correct directory level.
 
-- Running conversion utilities:
+#### Running exposure calculation workflow:
 
-  - .shp to .rds (see below on how to pass additional arguments)
+- Identify your directories:
+  - A data folder with the input_config.yml and .rds files (either your own or
+    the cloned data-raw/ and check input_config.yml)
+  - An outputs directory for script results
+  - You can update arguments by updating the input_config.yml.
+  - If you face error running the below command - try updating the "workers" to
+    1 in the input_config.yml and rerun below command.
 
-    - use -e or --extent for extent
-    - use -r or --resolution for resolution
-    - use -c or --crs for crs
-    - use -m or --realm for realm
-    - use -p or --parallel for parallel
-    - use -w or --workers for workers
+```
+Rscript scripts/main.R exposure -i data-raw/input_config.yml
+```
 
-    ```
-    Rscript scripts/main.R shp2rds -i "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" -o "./outputs/species_test_op.rds"
-    ```
+#### Running conversion utilities:
 
-  - .tif to .rds
-    ```
-    Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/historical.tif" -o "./outputs/historical_data_op.rds"
-    ```
-    or (if range is an argument)
-    ```
-    Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/ssp585.tif" -o "./outputs/future_data_op.rds" -y "2015:2100"
-    ```
+- .shp to .rds (see below on how to pass additional arguments)
 
-- Running exposure calculation workflow:
-  - Identify your directories:
-    - A data folder with the input_config.yml and .rds files (either your own or
-      the cloned data-raw/ and check input_config.yml)
-    - An outputs directory for script results
-    - You can update arguments by updating the input_config.yml.
-    - If you face error running the below command - try updating the "workers"
-      to 1 in the input_config.yml and rerun below command.
+  - use -e or --extent for extent
+  - use -r or --resolution for resolution
+  - use -c or --crs for crs
+  - use -m or --realm for realm
+  - use -p or --parallel for parallel
+  - use -w or --workers for workers
+
   ```
-  Rscript scripts/main.R exposure -i data-raw/input_config.yml
+  Rscript scripts/main.R shp2rds -i "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" -o "./outputs/species_test_op.rds"
+  ```
+
+- .tif to .rds
+  ```
+  Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/historical.tif" -o "./outputs/historical_data_op.rds"
+  ```
+  or (if range is an argument)
+  ```
+  Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/ssp585.tif" -o "./outputs/future_data_op.rds" -y "2015:2100"
   ```
 
 ### Step 2: Output Files
@@ -120,38 +122,41 @@ docker build -t biodiversityhorizons .
 
 ### Step 2a: Run the commands on the docker container using run_container.sh
 
-- Running exposure workflow:
-  - Identify your directories:
-    - A data folder with the input_config.yml and .rds files (either your own or
-      the cloned data-raw/)
-    - An outputs directory for script results
-    - You can update arguments by updating the input_config.yml.
+#### Running exposure workflow:
+
+- Identify your directories:
+  - A data folder with the input_config.yml and .rds files (either your own or
+    the cloned data-raw/)
+  - An outputs directory for script results
+  - You can update arguments by updating the input_config.yml.
+
+```
+sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+```
+
+#### Running conversion utilities:
+
+- .shp to .rds (see below on how to pass additional arguments)
+
+  - use -e or --extent for extent
+  - use -r or --resolution for resolution
+  - use -c or --crs for crs
+  - use -m or --realm for realm
+  - use -p or --parallel for parallel
+  - use -w or --workers for workers
+
   ```
-  sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+  sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
   ```
-- Running conversion utilities:
 
-  - .shp to .rds (see below on how to pass additional arguments)
-
-    - use -e or --extent for extent
-    - use -r or --resolution for resolution
-    - use -c or --crs for crs
-    - use -m or --realm for realm
-    - use -p or --parallel for parallel
-    - use -w or --workers for workers
-
-    ```
-    sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
-    ```
-
-  - .tif to .rds
-    ```
-    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
-    ```
-    or (if range is an argument)
-    ```
-    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
-    ```
+- .tif to .rds
+  ```
+  sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
+  ```
+  or (if range is an argument)
+  ```
+  sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
+  ```
 
 ## Pull Requests
 
