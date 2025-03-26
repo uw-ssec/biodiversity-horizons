@@ -140,7 +140,6 @@ cd /home/biodiversity-horizons
 
 Run with Default Arguments in input_config.yml
 
-
 ```
 Rscript scripts/main.R exposure -i data-raw/input_config.yml
 ```
