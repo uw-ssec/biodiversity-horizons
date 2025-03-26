@@ -87,15 +87,15 @@ successful.
 ## Step 4: Pull the .sif Image on Hyak from Container registry
 
 ```
-apptainer pull /gscratch/scrubbed/<<UWNetid>/basics/biodiversity-horizons_latest.sif \
-    docker://ghcr.io/uw-ssec/biodiversity-horizons:latest
+apptainer pull /gscratch/scrubbed/<<UWNetid>/basics/biodiversityhorizons_latest.sif \
+    docker://ghcr.io/uw-ssec/biodiversityhorizons:latest
 ```
 
 Alternatively, try with Singularity:
 
 ```
-singularity pull /gscratch/scrubbed/<<UWNetid>/basics/biodiversity-horizons_latest.sif \
-    docker://ghcr.io/uw-ssec/biodiversity-horizons:latest
+singularity pull /gscratch/scrubbed/<<UWNetid>/basics/biodiversityhorizons_latest.sif \
+    docker://ghcr.io/uw-ssec/biodiversityhorizons:latest
 ```
 
 Verify the download:
@@ -110,14 +110,14 @@ ls -l /gscratch/scrubbed/<UWNetid>/basics/
 
 ```
 apptainer shell --bind /gscratch/scrubbed/<UWNetid>/data-raw:/home/biodiversity-horizons/data-raw \
-    /gscratch/scrubbed/<UWNetid>/basics/biodiversity-horizons_latest.sif
+    /gscratch/scrubbed/<UWNetid>/basics/biodiversityhorizons_latest.sif
 ```
 
 Alternatively, try with Singularity:
 
 ```
 singularity shell --bind /gscratch/scrubbed/<UWNetid>/data-raw:/home/biodiversity-horizons/data-raw \
-    /gscratch/scrubbed/<UWNetid>/basics/biodiversity-horizons_latest.sif
+    /gscratch/scrubbed/<UWNetid>/basics/biodiversityhorizons_latest.sif
 ```
 
 You should now see the `Apptainer>` prompt.
@@ -138,13 +138,7 @@ cd /home/biodiversity-horizons
 
 ## Step 7: Run the R Script
 
-Run with Default Arguments
-
-```
-Rscript scripts/main.R exposure --data data-raw/
-```
-
-Run with Custom Parameters
+Run with Default Arguments in input_config.yml
 
 ```
 Rscript scripts/main.R exposure -i data-raw/input_config.yml

@@ -115,7 +115,7 @@ Use the provided `Dockerfile` to build the image and update the CONTAINER
 variable with built image name in run_container.sh:
 
 ```bash
-docker build -t biodiversity-horizons .
+docker build -t biodiversityhorizons .
 ```
 
 ### Step 2a: Run the commands on the docker container using run_container.sh
