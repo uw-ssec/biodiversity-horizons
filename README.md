@@ -62,7 +62,7 @@ If pulling fails with a `“denied”` error, generate a
 echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 ```
 
-### 3. Obtain or Prepare your `data-raw/` folder
+### 3. Obtain or Prepare your `data-raw/` and `outputs/` folders
 
 - #### Option A: Using Your Own Data
 
@@ -88,37 +88,41 @@ echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 
   **2. Use the included data-raw/ folder. It contains sample .rds files.**
 
+  **3. [Optional: If the folder does not exist] Run:** `mkdir -p outputs`
+
 ### 4. Run the commands on the docker container using run_container.sh
 
-- Running conversion utilities:
-  - .shp to .rds (see below on how to pass additional arguments)
-    - use -e or --extent for extent
-    - use -r or --resolution for resolution
-    - use -c or --crs for crs
-    - use -m or --realm for realm
-    - use -p or --parallel for parallel
-    - use -w or --workers for workers
-    ```
-    sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
-    ```
-  - .tif to .rds
-    ```
-    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
-    ```
-    or (if range is an argument)
-    ```
-    sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
-    ```
-- Running exposure workflow:
+#### Running exposure workflow:
 
-  - Identify your directories:
-    - A data folder with the input_config.yml and .rds files (either your own or
-      the cloned data-raw/)
-    - An outputs directory for script results
-    - Example command shown below:
+- Identify your directories:
+  - A data folder with the input_config.yml and .rds files (either your own or
+    the cloned data-raw/)
+  - An outputs directory for script results
+  - Example command shown below:
 
+```
+sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+```
+
+#### Running conversion utilities:
+
+- .shp to .rds (see below on how to pass additional arguments)
+  - use -e or --extent for extent
+  - use -r or --resolution for resolution
+  - use -c or --crs for crs
+  - use -m or --realm for realm
+  - use -p or --parallel for parallel
+  - use -w or --workers for workers
   ```
-  sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+  sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
+  ```
+- .tif to .rds
+  ```
+  sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
+  ```
+  or (if range is an argument)
+  ```
+  sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
   ```
 
 ## Setup and Run Apptainer
@@ -155,7 +159,7 @@ ls -l /mnt/biodiversityhorizons.sif
 **Step 5: Run Apptainer shell and mount required directories**
 
 ```
-apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw /mnt/biodiversityhorizons.sif
+apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw,/mnt/outputs:/home/biodiversity-horizons/outputs /mnt/biodiversityhorizons.sif
 ```
 
 ### Inside Apptainer Shell:
@@ -164,6 +168,17 @@ apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw /mnt/b
 
 ```
 cd /home/biodiversity-horizons
+```
+
+Inside the Apptainer shell, verify the `data-raw/` and `outputs/` folders are
+available:
+
+```
+ls -l /home/biodiversity-horizons/data-raw/
+```
+
+```
+ls -l /home/biodiversity-horizons/outputs/
 ```
 
 **Step 7: Run the R exposure calculation script (you can modify the arguments by
