@@ -6,6 +6,11 @@ library(furrr)
 library(here)
 library(stars)
 library(logger)
+library(arrow)
+library(glue)
+library(purrr)
+
+source("utility/bien_processing_util.R")
 
 
 #' Prepare Species Range Data by Intersecting with Grid
@@ -140,6 +145,7 @@ prepare_climate_data_from_tif <- function(input_file,
 
   log_info("Convert raster to spatial grid with world IDs...")
   grid <- input_data %>%
+    rotate() %>%
     st_as_stars() %>%
     st_as_sf() %>%
     mutate(world_id = 1:nrow(.)) %>%
@@ -160,46 +166,156 @@ prepare_climate_data_from_tif <- function(input_file,
   return(updated_grid)
 }
 
-#' Create a Spatial Grid as an sf Object
+#' Create a Spatial Grid (Raster for BIEN, sf for Shapefiles)
 #'
-#' This function generates a raster grid with a specified extent, resolution,
-#' and coordinate reference system (CRS),
-#' assigns unique IDs to each cell,
-#' and converts it into a simple feature (`sf`) object.
+#' Generates a grid with specified extent, resolution, and CRS.
+#' Returns either a SpatRaster with world_id (for BIEN climate use) or
+#' an sf object (for shapefile intersection).
 #'
-#' @param extent_vals A numeric vector of four values specifying the extent
-#' in the format `c(xmin, xmax, ymin, ymax)`. Default is `c(-180, 180, -90, 90)`
-#' @param resolution A numeric value defining grid resolution. Default is `1`
-#' @param crs A character string specifying the coordinate reference system
-#' (CRS) in EPSG format. Default is `"EPSG:4326"`.
+#' @param extent_vals Numeric vector: xmin, xmax, ymin, ymax. Default: global
+#' @param resolution Numeric. Default: 1
+#' @param crs CRS string. Default: EPSG:4326
+#' @param for_bien Logical. If TRUE, returns SpatRaster. If FALSE, returns sf.
 #'
-#' @return An `sf` object representing the spatial grid.
+#' @return Either a `SpatRaster` (if for_bien = TRUE) or `sf` grid.
 #' @export
 create_grid <- function(extent_vals = c(-180, 180, -90, 90),
-                        resolution = 1, crs = "EPSG:4326") {
+                        resolution = 1,
+                        crs = "EPSG:4326",
+                        for_bien = FALSE) {
+  r <- rast(
+    extent = ext(extent_vals[1], extent_vals[2],
+                 extent_vals[3], extent_vals[4]),
+    resolution = resolution,
+    crs = crs
+  )
 
-  # Create a raster with the specified extent, resolution, and CRS
-  r <- rast(extent = ext(extent_vals[1],
-                         extent_vals[2],
-                         extent_vals[3],
-                         extent_vals[4]),
-            resolution = resolution,
-            crs = crs)
+  world_id_layer <- r
+  values(world_id_layer) <- 1:ncell(world_id_layer)
+  names(world_id_layer) <- "world_id"
 
-  # Create a new layer for world_id
-  world_id_layer <- r  # Copy the raster structure
-  values(world_id_layer) <- 1:ncell(world_id_layer)  # Assign unique IDs
+  if (for_bien) {
+    return(world_id_layer)
+  }
 
-  # Combine layers into a multi-layer raster
+  # SHP use-case: return sf grid with geometry
   r <- c(world_id_layer, r)
-
-  # Rename layers
   names(r) <- c("world_id", "geometry")
 
-  # Convert raster to an sf object
   grid <- r %>%
     st_as_stars() %>%
     st_as_sf()
 
   return(grid)
+}
+
+#' Prepare BIEN Climate Data from .tif
+#' Supports both historical and future input
+#'
+#' @param input_file path to input .tif
+#' @param output_file path to save .rds
+#' @param year_range year sequence (default: historical 1850:2014)
+#' @return processed tibble
+#' @export
+prepare_bien_climate_data_from_tif <- function(input_file,
+                                               output_file,
+                                               year_range = 1850:2014) {
+  log_info("Reading climate .tif: {input_file}")
+  climate_raster <- rast(here(input_file))
+
+  world_grid <- create_grid(for_bien = TRUE)
+
+  log_info("Extending climate raster to match world grid...")
+  extended <- extend(climate_raster, world_grid)
+
+  combined <- c(world_grid, extended)
+
+  log_info("Converting raster to tibble...")
+  dat <- as.data.frame(combined, xy = TRUE) %>%
+    as_tibble() %>%
+    rename_with(~ c("world_id", as.character(year_range)), .cols = -c(x, y)) %>%
+    relocate(world_id) %>%
+    select(-x, -y) %>%
+    mutate(across(all_of(as.character(year_range)), ~ . - 273.15))  # Kelvin to Celsius
+
+  saveRDS(dat, here(output_file))
+  log_info("Saved processed climate data to {output_file}")
+  return(dat)
+}
+
+#' Preprocess BIEN Species Ranges
+#'
+#' This function processes all BIEN species from a manifest by converting their raster ranges
+#' to binary presence/absence format, aligned with a global climate grid, and saves the result
+#' as Parquet files. It supports parallel execution for large-scale batch processing.
+#'
+#' @param manifest_path Path to the manifest Parquet file containing all species info.
+#' @param processed_dir Directory to save the processed BIEN Parquet outputs.
+#' @param ranges_folder Directory containing the raw raster files (.tif).
+#' @param climate_grid Path to the climate grid raster to align with.
+#' @param aggregation_rule Aggregation rule used in `process_bien_ranges()`. Default is `"any"`.
+#' @param species_subset Optional vector of species names to process. If `NULL`, processes all species.
+#' @param use_parallel Logical indicating whether to use parallel processing. Default is `TRUE`.
+#' @param number_of_workers Number of parallel workers to use. Default is 4.
+#'
+#' @return No return value. Processed species are saved as Parquet files in the specified directory.
+#' @export
+preprocess_all_bien_species <- function(manifest_path,
+                                        processed_dir,
+                                        ranges_folder,
+                                        aggregation_rule = "any",
+                                        species_subset = NULL,
+                                        climate_grid_path,
+                                        use_parallel = TRUE,
+                                        number_of_workers = 4) {
+
+  if (!dir.exists(processed_dir)) {
+    dir.create(processed_dir, recursive = TRUE)
+  }
+
+  manifest <- open_dataset(manifest_path)
+  species_list <- manifest %>%
+    select(spp) %>%
+    distinct() %>%
+    collect() %>%
+    pull(spp)
+
+  if (!is.null(species_subset)) {
+    species_list <- intersect(species_list, species_subset)
+  }
+
+  log_info("Preparing to process {length(species_list)} species...")
+
+  if (use_parallel) {
+    log_info("Using parallel processing with {number_of_workers} workers...")
+    future::plan(multisession, workers = number_of_workers)
+  } else {
+    log_info("Using sequential processing...")
+    future::plan(sequential)
+  }
+
+  process_one <- function(species_name) {
+    tryCatch({
+      log_info("Processing {species_name}")
+      result <- process_bien_ranges(
+      species_name = species_name,
+      ranges_folder = ranges_folder,
+      output_folder = processed_dir,
+      manifest_path = manifest_path,
+      climate_grid_path = climate_grid_path,
+      aggregation_rule = aggregation_rule
+    )
+    if (is.null(result)) {
+      log_warn("Species {species_name} returned NULL.")
+    } else {
+      log_info("Successfully processed and saved: {species_name}")
+    }
+  }, error = function(e) {
+    log_error("Failed for {species_name}: {e$message}")
+  })
+}
+
+  future_walk(species_list, process_one)
+
+  log_info("BIEN range pre-processing completed.")
 }

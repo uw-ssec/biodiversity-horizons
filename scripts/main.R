@@ -220,6 +220,118 @@ run_climatearray2rds <- function(args) {
   print("File converted successfully!")
 }
 
+run_bienclimate2rds <- function(args) {
+  source("utility/format_conversion_util.R")
+
+  option_list <- list(
+    make_option(c("-i", "--input"),
+      type = "character",
+      help = "Path to the input BIEN climate .tif file"
+    ),
+    make_option(c("-o", "--output"),
+      type = "character",
+      help = "Path to save the output .rds file"
+    ),
+    make_option(c("-y", "--year_range"),
+      type = "character",
+      default = "1850:2014",
+      help = "Year range as a sequence (e.g., '1850:2014')"
+    )
+  )
+
+  opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])
+  check_not_null(opt$input, "input")
+  check_not_null(opt$output, "output")
+
+  year_range <- eval(parse(text = opt$year_range))
+
+  print("Converting BIEN climate .tif to rds using the following options:")
+  cat("Input:", opt$input, "\n")
+  cat("Output:", opt$output, "\n")
+  cat("Year range:", opt$year_range, "\n")
+
+  bien_climate <- prepare_bien_climate_data_from_tif(
+    input_file = opt$input,
+    output_file = opt$output,
+    year_range = year_range
+  )
+
+  print("File converted successfully!")
+}
+
+run_convertbienranges <- function(args) {
+  source("utility/format_conversion_util.R")
+
+  option_list <- list(
+    make_option(c("-m", "--manifest"),
+      type = "character",
+      help = "Path to manifest.parquet"
+    ),
+    make_option(c("-o", "--output"),
+      type = "character",
+      help = "Directory to save processed outputs"
+    ),
+    make_option(c("-r", "--ranges"),
+      type = "character",
+      help = "Directory containing raw BIEN .tif files"
+    ),
+    make_option(c("-g", "--grid"),
+      type = "character",
+      help = "Path to saved global climate grid (.tif)"
+    ),
+    make_option(c("-a", "--aggregation_rule"),
+      type = "character",
+      default = "any",
+      help = "Aggregation rule (default: 'any')"
+    ),
+    make_option(c("-s", "--subset"),
+      type = "character",
+      default = NULL,
+      help = "Comma-separated subset of species to process (optional)"
+    ),
+    make_option(c("-p", "--parallel"),
+      type = "logical",
+      default = TRUE,
+      help = "Use parallel processing (default: TRUE)"
+    ),
+    make_option(c("-w", "--workers"),
+      type = "numeric",
+      default = parallel::detectCores() - 1,
+      help = "Number of parallel workers"
+    )
+  )
+
+  opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])
+
+  check_not_null(opt$manifest, "manifest")
+  check_not_null(opt$output, "output")
+  check_not_null(opt$ranges, "ranges")
+  check_not_null(opt$grid, "grid")
+
+  species_subset <- if (!is.null(opt$subset)) strsplit(opt$subset, ",")[[1]] else NULL
+
+  cat("Running BIEN range preprocessing with options:\n")
+  cat("Manifest:", opt$manifest, "\n")
+  cat("Output Directory:", opt$output, "\n")
+  cat("Ranges Directory:", opt$ranges, "\n")
+  cat("Climate Grid Path:", opt$grid, "\n")
+  cat("Aggregation Rule:", opt$aggregation_rule, "\n")
+  cat("Parallel:", opt$parallel, "\n")
+  cat("Workers:", opt$workers, "\n")
+  if (!is.null(species_subset)) cat("Subset of species:", paste(species_subset, collapse = ", "), "\n")
+
+  preprocess_all_bien_species(
+    manifest_path        = opt$manifest,
+    processed_dir        = opt$output,
+    ranges_folder        = opt$ranges,
+    climate_grid_path    = opt$grid,
+    aggregation_rule     = opt$aggregation_rule,
+    species_subset       = species_subset,
+    use_parallel         = opt$parallel,
+    number_of_workers    = opt$workers
+  )
+}
+
 run_exposure <- function(args) {
 
   source("scripts/exposure_workflow.R")
@@ -244,6 +356,10 @@ run_exposure <- function(args) {
   cat("data_path:", data_path, "\n")
   check_not_null(data_path, "data_path")
 
+  species_type <- if (!is.null(config$species_type)) config$species_type else "shp"
+  plan_type    <- if (!is.null(config$plan_type)) config$plan_type else "multisession"
+  workers      <- if (!is.null(config$workers)) config$workers else (parallel::detectCores() - 1)
+
   # Extract arguments from yml
   historical_climate_file <- data_files$historical_climate
   future_climate_file <- data_files$future_climate
@@ -264,7 +380,8 @@ run_exposure <- function(args) {
 
   historical_climate_file_path <- file.path(data_path, historical_climate_file)
   future_climate_file_path <- file.path(data_path, future_climate_file)
-  species_file_path <- file.path(data_path, species_file)
+  species_file_path <- if (startsWith(species_file, "/")) species_file else file.path(data_path, species_file)
+
 
   check_file_exists(historical_climate_file_path)
   check_file_exists(future_climate_file_path)
@@ -280,14 +397,15 @@ run_exposure <- function(args) {
   log_info("Plan type:", plan_type, "\n")
   log_info("Workers:", workers, "\n")
 
-  exposure_time_workflow(
-    historical_climate_filepath = historical_climate_file_path,
-    future_climate_filepath = future_climate_file_path,
-    species_filepath = species_file_path,
-    plan_type = plan_type,
-    workers = workers,
-    exposure_result_file = exposure_result_file
-  )
+  exposure_workflow(
+      historical_climate_filepath = historical_climate_file_path,
+      future_climate_filepath     = future_climate_file_path,
+      species_filepath            = species_file_path,
+      species_type                = species_type,
+      plan_type                   = plan_type,
+      workers                     = workers,
+      exposure_result_file        = exposure_result_file
+    )
 }
 
 # Main function
@@ -304,6 +422,10 @@ if (cmd == "shp2rds") {
   run_tif2rds(args)
 } else if (cmd == "climatearray2rds") {
   run_climatearray2rds(args)
+} else if (cmd == "bienclimate2rds") {
+  run_bienclimate2rds(args)
+} else if (cmd == "convert_bienranges") {
+  run_convertbienranges(args)
 } else {
-  stop("Invalid command. Use 'shp2rds', 'tif2rds', 'climatearray2rds' or 'exposure'.")
+  stop("Invalid command. Use 'shp2rds', 'tif2rds', 'climatearray2rds', 'bienclimate2rds', 'convertbienranges' or 'exposure'.")
 }

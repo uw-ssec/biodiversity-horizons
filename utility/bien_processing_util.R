@@ -1,13 +1,12 @@
-library(terra)    # For raster operations
-library(logger)   # For logging
-library(arrow)    # For reading Parquet files
-library(dplyr)    # For data manipulation
-library(purrr)    # For functional programming
-library(glue)     # For string formatting
-library(sf)       # For spatial operations
-library(stars)    # For raster operations
+library(terra)
+library(logger)
+library(arrow)
+library(dplyr)
+library(purrr)
+library(glue)
+library(sf)
+library(stars)
 
-#-------------------------------------------------
 # Function to convert future BIEN ranges to binary presence/absence.
 binRange <- function(rng, full_domain = FALSE) {
   if (nlyr(rng) < 2) {
@@ -23,16 +22,16 @@ binRange <- function(rng, full_domain = FALSE) {
   return(rng1)
 }
 
-#-------------------------------------------------
 # Main function to process BIEN species range data and align with the climate grid.
 process_bien_ranges <- function(
   species_name,
-  ranges_folder = "~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs",
-  output_folder = "~/Desktop/home/bsc23001/projects/bien_ranges/processed",
-  manifest_path = "~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest/manifest.parquet",
-  climate_grid_path = "data-raw/global_grid.tif",
-  aggregation_rule = "any"
-) {
+  ranges_folder,
+  output_folder,
+  manifest_path,
+  climate_grid_path,
+  aggregation_rule
+)
+ {
   log_info("Processing BIEN species: {species_name}")
 
   if (!dir.exists(output_folder)) {
@@ -54,7 +53,6 @@ process_bien_ranges <- function(
     log_error("Climate grid does not contain a 'world_id' layer.")
     return(NULL)
   }
-  log_info(" Climate Grid: Extent: {ext(climate_grid)}, Resolution: {res(climate_grid)}, CRS: {crs(climate_grid)}, Origin: {origin(climate_grid)}")
 
   # --- Process PRESENT range ---
   pres_file <- file.path(ranges_folder, species_files$path[grepl("present", species_files$path)])
@@ -66,7 +64,6 @@ process_bien_ranges <- function(
   pres <- rast(pres_file) - 4 #codespell:ignore pres
   pres <- ifel(pres >= 2, 1, NA) #codespell:ignore pres
   names(pres) <- "present" #codespell:ignore pres
-  log_info("Unique values in present raster after binary conversion: {unique(values(pres))}") #codespell:ignore pres
 
   # --- Process FUTURE ranges ---
   futRngs <- species_files %>%
@@ -87,18 +84,15 @@ process_bien_ranges <- function(
   # --- Reproject to WGS84 ---
   log_info(" Reprojecting BIEN raster to EPSG:4326...")
   final_stack_wgs84 <- project(final_stack, "EPSG:4326", method = "near")
-  log_info("Reprojected BIEN Raster: Extent: {ext(final_stack_wgs84)}, Resolution: {res(final_stack_wgs84)}")
 
   # --- Aggregate to 1° resolution ---
   # Compute the aggregation factor based on the native resolution of the reprojected BIEN raster.
   current_res <- res(final_stack_wgs84)[1]  # assuming square pixels
   agg_factor <- round(1 / current_res)
-  log_info("Aggregation factor computed as: {agg_factor}")
 
   bien_1deg <- aggregate(final_stack_wgs84, fact = c(agg_factor, agg_factor), fun = function(x) {
     if (any(x == 1, na.rm = TRUE)) 1 else NA
   })
-  # log_info("🔍 Unique BIEN Raster Values AFTER Aggregation: {unique(values(bien_1deg))}")
 
   if (all(is.na(values(bien_1deg)))) {
     log_error(" BIEN raster has only NA values after aggregation. Aborting process.")
@@ -107,15 +101,6 @@ process_bien_ranges <- function(
 
   # --- Resample to match the climate grid exactly ---
   bien_resampled <- resample(bien_1deg, climate_grid, method = "near")
-  log_info("🔍 Unique BIEN Raster Values AFTER Resampling: {unique(values(bien_resampled))}")
-
-    # Verify properties of the BIEN raster (before converting to data frame)
-  cat("BIEN Raster Properties:\n")
-  cat("  Extent:   ", toString(ext(bien_resampled)), "\n")
-  cat("  Resolution: ", toString(res(bien_resampled)), "\n")
-  cat("  Origin:   ", toString(origin(bien_resampled)), "\n")
-  cat("  CRS:      ", toString(crs(bien_resampled)), "\n")
-
 
   # --- Convert to DataFrame and assign world_id ---
   bien_df <- as.data.frame(bien_resampled, xy = TRUE)
@@ -130,16 +115,16 @@ process_bien_ranges <- function(
     mutate(world_id = cellFromXY(climate_grid, cbind(x, y))) %>%
     filter(!is.na(world_id))
 
-  log_info("Final BIEN Raster DataFrame: Extent: {ext(bien_resampled)}, Resolution: {res(bien_resampled)}")
-  log_info("Total presence points with valid world_id: {nrow(bien_df)}")
+  bien_df$species_name <- species_name
 
-  # --- Save Processed Data ---
-  output_file <- file.path(output_folder, paste0(species_name, "_processed.rds"))
-  saveRDS(bien_df, output_file)
-  log_info("💾 Saved processed BIEN data with world_id to {output_file}")
+  # --- Save Processed Data as Parquet ---
+  output_file_parquet <- file.path(output_folder, paste0(species_name, "_processed.parquet"))
+  write_parquet(bien_df, output_file_parquet)
+  if (!file.exists(output_file_parquet)) {
+  log_error("Parquet file was not written for {species_name}")
+}
+
+  log_info("Saved processed BIEN data to {output_file_parquet}")
 
   return(bien_df)
 }
-
-# Example usage:
-processed_bien <- process_bien_ranges("Aa mathewsii")
