@@ -143,3 +143,7 @@ version.py
 # pixi environments
 .pixi
 *.egg-info
+.Rproj.user
+
+# tier_1 file that exceedes 25Mb
+tier_1/data/climate/historical_array.rds
