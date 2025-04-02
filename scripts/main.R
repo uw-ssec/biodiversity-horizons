@@ -335,77 +335,73 @@ run_convertbienranges <- function(args) {
 run_exposure <- function(args) {
 
   source("scripts/exposure_workflow.R")
+
   option_list <- list(
-    make_option(c("-i", "--input_yml"),
-      type = "character",
-      help = "input config yml filepath"
-    )
+    make_option(c("-i", "--input_yml"), type = "character", help = "Input config YAML filepath"),
+    make_option("--historical_climate", type = "character", help = "Override historical climate file"),
+    make_option("--future_climate", type = "character", help = "Override future climate file"),
+    make_option("--species", type = "character", help = "Override species file or directory"),
+    make_option("--species_type", type = "character", help = "Override species type (e.g., 'bien')"),
+    make_option("--plan_type", type = "character", help = "Override parallel plan type"),
+    make_option("--workers", type = "integer", help = "Override number of workers")
   )
+
   opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])
 
-
-  # Read the YAML file
-  log_info("input_yml:", opt$input_yml, "\n")
+  log_info("input_yml: {opt$input_yml}")
   check_not_null(opt$input_yml, "input_yml")
   config <- read_yaml_file(opt$input_yml)
 
   data_path <- dirname(opt$input_yml)
+  check_not_null(data_path, "data_path")
   data_files <- config$data_files
 
-  # Ensure data_path is provided
-  cat("data_path:", data_path, "\n")
-  check_not_null(data_path, "data_path")
+  # Override with CLI values if provided
+  if (!is.null(opt$historical_climate)) data_files$historical_climate <- opt$historical_climate
+  if (!is.null(opt$future_climate))     data_files$future_climate     <- opt$future_climate
+  if (!is.null(opt$species))            data_files$species            <- opt$species
+  if (!is.null(opt$species_type))       config$species_type           <- opt$species_type
+  if (!is.null(opt$plan_type))          config$plan_type              <- opt$plan_type
+  if (!is.null(opt$workers))            config$workers                <- opt$workers
 
+  # Default fallbacks
   species_type <- if (!is.null(config$species_type)) config$species_type else "shp"
   plan_type    <- if (!is.null(config$plan_type)) config$plan_type else "multisession"
   workers      <- if (!is.null(config$workers)) config$workers else (parallel::detectCores() - 1)
 
-  # Extract arguments from yml
+  # File paths
   historical_climate_file <- data_files$historical_climate
-  future_climate_file <- data_files$future_climate
-  species_file <- data_files$species
-  exposure_result_file <- config$exposure_result_file
-
-  plan_type <-
-    if (!is.null(config$plan_type))
-      config$plan_type
-    else
-      "multisession"
-
-  workers <-
-    if (!is.null(config$workers))
-      config$workers
-    else
-      (parallel::detectCores() - 1)
+  future_climate_file     <- data_files$future_climate
+  species_file            <- data_files$species
+  exposure_result_file    <- config$exposure_result_file
 
   historical_climate_file_path <- file.path(data_path, historical_climate_file)
-  future_climate_file_path <- file.path(data_path, future_climate_file)
+  future_climate_file_path     <- file.path(data_path, future_climate_file)
   species_file_path <- if (startsWith(species_file, "/")) species_file else file.path(data_path, species_file)
-
 
   check_file_exists(historical_climate_file_path)
   check_file_exists(future_climate_file_path)
   check_file_exists(species_file_path)
-  check_not_null(exposure_result_file, "input_yml 'exposure_result_file'")
-
+  check_not_null(exposure_result_file, "exposure_result_file")
 
   log_info("Calculating exposure using the following options:")
-  log_info("Historical climate path:", historical_climate_file_path, "\n")
-  log_info("Future climate path:", future_climate_file_path, "\n")
-  log_info("Species path:", species_file_path, "\n")
-  log_info("Exposure result File:", exposure_result_file, "\n")
-  log_info("Plan type:", plan_type, "\n")
-  log_info("Workers:", workers, "\n")
+  log_info("Historical climate path: {historical_climate_file_path}")
+  log_info("Future climate path: {future_climate_file_path}")
+  log_info("Species path: {species_file_path}")
+  log_info("Exposure result file: {exposure_result_file}")
+  log_info("Species type: {species_type}")
+  log_info("Plan type: {plan_type}")
+  log_info("Workers: {workers}")
 
   exposure_workflow(
-      historical_climate_filepath = historical_climate_file_path,
-      future_climate_filepath     = future_climate_file_path,
-      species_filepath            = species_file_path,
-      species_type                = species_type,
-      plan_type                   = plan_type,
-      workers                     = workers,
-      exposure_result_file        = exposure_result_file
-    )
+    historical_climate_filepath = historical_climate_file_path,
+    future_climate_filepath     = future_climate_file_path,
+    species_filepath            = species_file_path,
+    species_type                = species_type,
+    plan_type                   = plan_type,
+    workers                     = workers,
+    exposure_result_file        = exposure_result_file
+  )
 }
 
 # Main function
@@ -427,5 +423,5 @@ if (cmd == "shp2rds") {
 } else if (cmd == "convert_bienranges") {
   run_convertbienranges(args)
 } else {
-  stop("Invalid command. Use 'shp2rds', 'tif2rds', 'climatearray2rds', 'bienclimate2rds', 'convertbienranges' or 'exposure'.")
+  stop("Invalid command. Use 'shp2rds', 'tif2rds', 'climatearray2rds', 'bienclimate2rds', 'convert_bienranges' or 'exposure'.")
 }
