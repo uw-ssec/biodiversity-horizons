@@ -36,7 +36,7 @@ ls -l $pd/data/basics
 ls -l $pd/analysis/outputs
 
 # Run apptainer in a compute node
-# This was doing strange things, so I just used srun. Maybe try salloc followed by srun --pty bash
+# salloc was doing strange things, so I just used srun. Maybe try salloc followed by srun --pty bash
 #salloc --partition=debug --nodes=1 --ntasks=1 --cpus-per-task=4 --mem=10G --time=30
 
 srun -n 4 --mem 30GB -p debug --pty bash
@@ -79,6 +79,7 @@ apptainer config global --get "mount home" #Set to "yes"
 # Also had to mount outputs
 # can add --debug
 
+#=== First approach
 # This approach both builds the sandbox (unsquash) and runs the container
 # But it is very slow (feels like a couple minutes), since it has the build the sandbox every time
 # Also super slow when exiting
@@ -87,6 +88,7 @@ apptainer shell --cleanenv --no-home \
   --bind $pd/analysis/outputs:/home/biodiversity-horizons/outputs --unsquash \
     $pd/data/basics/biodiversityhorizons_latest.sif
 
+#=== Better apporach
 # Alternative approach build the sandbox as a seperate step, so you only do it once
 apptainer build --disable-cache --sandbox $pd/data/basics/bh_sandbox \
   $pd/data/basics/biodiversityhorizons_latest.sif
@@ -111,5 +113,15 @@ env | grep HOME #Filter to show that HOME is still set to my local home director
     
 HOME=/home/biodiversity-horizons
 
+#=== Best apporach
+
+# Build sandbox first, as above
+# Then, set the home directory when lauching apptainer
+apptainer shell --cleanenv \
+  --no-home --home /home/biodiversity-horizons \
+  --bind $pd/data/data-raw:/home/biodiversity-horizons/data-raw \
+  --bind $pd/analysis/outputs:/home/biodiversity-horizons/outputs \
+    $pd/data/basics/bh_sandbox
+    
 Rscript scripts/main.R exposure -i data-raw/input_config.yml
 
