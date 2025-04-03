@@ -95,13 +95,22 @@ echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 #### Running exposure workflow:
 
 - Identify your directories:
-  - A data folder with the input_config.yml and .rds files (either your own or
-    the cloned data-raw/)
+  - A data folder with the shp_config.yml (for shapefile-derived species data)
+    or bien_config.yml (for BIEN species data) and relevant .rds files (either
+    your own or from the cloned data-raw/)
   - An outputs directory for script results
   - Example command shown below:
 
+##### For SHP:
+
 ```
-sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+sh docker_exposure.sh "./data-raw/shp_config.yml" "./outputs"
+```
+
+##### For BIEN:
+
+```
+sh docker_exposure.sh "./data-raw/bien_config.yml" "./outputs"
 ```
 
 #### Running conversion utilities:
@@ -182,10 +191,18 @@ ls -l /home/biodiversity-horizons/outputs/
 ```
 
 **Step 7: Run the R exposure calculation script (you can modify the arguments by
-updating the input_config.yml file)**
+updating the shp_config.yml or bien_config.yml file)**
+
+##### For SHP:
 
 ```bash
-Rscript scripts/main.R exposure -i data-raw/input_config.yml
+Rscript scripts/main.R exposure -i data-raw/shp_config.yml
+```
+
+##### For BIEN:
+
+```bash
+Rscript scripts/main.R exposure -i data-raw/bien_config.yml
 ```
 
 ## Running and Developing

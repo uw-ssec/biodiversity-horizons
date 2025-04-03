@@ -16,6 +16,8 @@ library(arrow)
 log_threshold(INFO)
 log_info("Starting unified exposure workflow")
 
+BIEN_PARQUET_SUFFIX <- "_processed\\.parquet"
+
 exposure_workflow <- function(
   historical_climate_filepath,
   future_climate_filepath,
@@ -45,14 +47,13 @@ exposure_workflow <- function(
     log_info("Loading BIEN species data from directory: {species_filepath}")
     species_files <- list.files(
       species_filepath,
-      pattern = "_processed\\.parquet$",
+      pattern = BIEN_PARQUET_SUFFIX,
       full.names = TRUE
     )
 
     species_list <- list()
     for (file in species_files) {
-      species_name <- gsub("_processed\\.parquet", "", basename(file))
-      # log_info("Reading species: {species_name}")
+      species_name <- gsub(BIEN_PARQUET_SUFFIX, "", basename(file))
       bien_data <- arrow::read_parquet(file)
 
       if (nrow(bien_data) == 0) {
@@ -109,7 +110,7 @@ exposure_workflow <- function(
   exposure_df <- exposure_list %>%
     bind_rows() %>%
     mutate(sum = rowSums(select(., starts_with("2")))) %>%
-    filter(sum < 82) %>%
+    filter(sum < 82) %>% # Select only cells with < 82 suitable years
     select(-sum)
 
   cl <- future::makeClusterPSOCK(workers, port = 12000, outfile = NULL, verbose = TRUE)

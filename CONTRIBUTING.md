@@ -67,15 +67,24 @@ Ensure that your terminal is at the correct directory level.
 #### Running exposure calculation workflow:
 
 - Identify your directories:
-  - A data folder with the input_config.yml and .rds files (either your own or
-    the cloned data-raw/ and check input_config.yml)
+  - A data folder with the shp_config.yml (for shapefile-derived species data)
+    or bien_config.yml (for BIEN species data) and relevant .rds files (either
+    your own or from the cloned data-raw/)
   - An outputs directory for script results
-  - You can update arguments by updating the input_config.yml.
+  - You can update arguments by updating the shp_config.yml or bien_config.yml.
   - If you face error running the below command - try updating the "workers" to
-    1 in the input_config.yml and rerun below command.
+    1 in the config.yml and rerun below command.
 
+##### For SHP:
+
+```bash
+Rscript scripts/main.R exposure -i data-raw/shp_config.yml
 ```
-Rscript scripts/main.R exposure -i data-raw/input_config.yml
+
+##### For BIEN:
+
+```bash
+Rscript scripts/main.R exposure -i data-raw/bien_config.yml
 ```
 
 #### Running conversion utilities:
@@ -125,13 +134,22 @@ docker build -t biodiversityhorizons .
 #### Running exposure workflow:
 
 - Identify your directories:
-  - A data folder with the input_config.yml and .rds files (either your own or
-    the cloned data-raw/)
+  - A data folder with the shp_config.yml (for shapefile-derived species data)
+    or bien_config.yml (for BIEN species data) and relevant .rds files (either
+    your own or from the cloned data-raw/)
   - An outputs directory for script results
-  - You can update arguments by updating the input_config.yml.
+  - You can update arguments by updating the config.yml.
+
+##### For SHP:
 
 ```
-sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+sh docker_exposure.sh "./data-raw/shp_config.yml" "./outputs"
+```
+
+##### For BIEN:
+
+```
+sh docker_exposure.sh "./data-raw/bien_config.yml" "./outputs"
 ```
 
 #### Running conversion utilities:
