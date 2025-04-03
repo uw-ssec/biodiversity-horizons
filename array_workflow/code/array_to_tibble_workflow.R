@@ -1,11 +1,10 @@
 # this script converts arrays to tibbles
 
 # load libraries
-if(!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+library(pacman)
+p_load(tidyverse, here, terra, sf, dplyr, abind, tidyterra, rnaturalearth, pbmcapply)
 
-pacman::p_load(tidyverse, here, terra, sf, dplyr, purrr, abind, tidyterra, rnaturalearth, here, multiApply, CSTools, zeallot)
-
-
+n_cores <- 7
 # STEP 1: load climate data ---------------------------------------------------
 
 climate <- readRDS("/Users/andreas/Library/CloudStorage/Dropbox/Projects/biodiversity_dp/data/data_raw/climate/HIST_tas_MPI-ESM1-2-LR_r10i1p1f1_obs-ERA5.rds")
@@ -69,46 +68,60 @@ temp_tbl <- temp_tbl %>%
   left_join(id_tbl, by = c("lon", "lat")) %>%
   dplyr::select(world_id, year, month, temp)
 
+# these analyses are for terrestrial species
+# to reduce computational time, we will only keep grid cells over land
+world <- ne_countries(scale = "large", returnclass = "sf") %>% 
+  st_transform(crs = st_crs(r_template))
 
+r_template_terrestrial <- r_template %>% 
+  mask(world) 
 
 
 
 
 # STEP 2: load species data and convert to gridded format -----------
-range_data <- readRDS(here("data-raw/primates_shapefiles.rds"))
+# range_data <- readRDS(here("data-raw/primates_shapefiles.rds"))
+species_ranges <- list.files("/Users/andreas/Data/IUCN/rds", recursive = T, full.names = T)[c(1,3,4)]
 
-range_data <- range_data %>% 
-  filter(presence == 1,
-         origin %in% c(1,2),
-         seasonal %in% c(1,2))
 
-if("terrestial" %in% names(range_data)) range_data <- range_data %>% 
-  filter(terrestial == "true")
+
+range_data <- purrr::map(species_ranges, ~ {
+  
+  data <- readRDS(.x)
+  if("terrestial" %in% names(data)) data <- data %>% 
+      filter(terrestial == "true")
+  
+  if("Shape" %in% names(data)) data <- data %>% 
+      rename(geometry = Shape)
+  
+  data <- data %>% 
+    filter(presence == 1,
+           origin %in% c(1,2),
+           seasonal %in% c(1,2)) %>% 
+    dplyr::select(sci_name, geometry) 
+  
+  return(data)
+  
+}) %>% 
+  bind_rows()
 
 species <- sort(unique(range_data$sci_name))
 
-# note that this step requires the raster create above (line 57)
-spp_data <- purrr::map(species, safely(function(.species){
-  
-  print(.species)
-  spp_range <- range_data[range_data$sci_name == .species,]
+
+
+# note that this step requires the raster create above (line 76)
+
+
+spp_data <- pbmclapply(species, function(.species) {
+
+  spp_range <- range_data[which(range_data$sci_name == .species),]
   spp_range <- st_transform(spp_range, crs = st_crs(r_template))
   spp_range <- vect(spp_range)
-  r <- rasterize(spp_range, r_template, field = 1, background = 0, touches = T)
+  r <- rasterize(spp_range, r_template_terrestrial, field = 1, background = 0, touches = TRUE)
+  which(values(r) == 1)
   
-  id <- c(r_template, r) %>% 
-    as.data.frame() %>%
-    filter(layer == 1) %>%
-    pull(world_id)
-  
-  return(id)
-  
-}, quiet = F))
-
-# only select the result from safely
-spp_data <- transpose(spp_data)[["result"]]
-
-names(spp_data) <- species
+}, mc.cores = n_cores) %>% 
+  set_names(species)
 
 
 
@@ -151,7 +164,7 @@ get_niche_limits <- function(species_ranges, temperature_matrix, n_out){
 
 # first, remove outliers from the temperature tibble
 
-n_out <- 3
+n_out <- 5
 
 temp_processed <- temp_tbl %>% 
   filter(year <= 2000) %>% 
@@ -166,88 +179,91 @@ temp_processed <- temp_tbl %>%
 
 
 # estimate max and min thermal niche limits
-niche_limits <- map_dfr(spp_data, ~ get_niche_limits(.x, temp_processed, n_out = 3), .id = "species", .progress = T)
+
+niche_limits <- pbmclapply(spp_data, 
+                          function(.x) get_niche_limits(.x, temp_processed, n_out = n_out), 
+                          mc.cores = n_cores) %>% 
+  bind_rows(.id = "species")
 
 
 # STEP 4: calculate exposure ---------------------
-
-climate_data <- temp_tbl %>% 
-  filter(year > 2000)
   
-species_range <- spp_data
+species_grid_cells <- unlist(spp_data) %>% 
+  unique()
 
-niche <- niche_limits 
+# filter the climate data to only include the years after 2000 and grid cells where the species occur
+climate_data <- temp_tbl %>% 
+  filter(year > 2000,
+         world_id %in% species_grid_cells) 
+
 
 species <- names(spp_data)
 
-exposure <- function(spp, species_range, climate_data, niche, monthly = TRUE){
+exposure_fast <- function(spp, species_range, climate_data, niche, monthly = TRUE){
   
   
   spp_world_id <- species_range[[spp]]
   
-  spp_matrix <- climate_data %>% 
-    filter(world_id %in% spp_world_id) %>% 
-    drop_na()
+  spp_matrix <- climate_data[climate_data$world_id %in% spp_world_id,] %>% drop_na()
   
-  spp_niche <- niche %>%
-    filter(species %in% spp)
+  spp_niche <- niche[niche$species == spp,]
+  
   
   if(monthly){
     
-    output <- purrr::map(1:12, function(.x){
-      
-      spp_matrix_month <- spp_matrix %>% 
-        filter(month == .x)
-      
-      niche_min <- spp_niche %>% 
-        filter(month == .x) %>%
-        pull(niche_min)
-      
-      niche_max <- spp_niche %>%
-        filter(month == .x) %>%
-        pull(niche_max)
-      
-      spp_matrix_month <- spp_matrix_month %>%
-        mutate(across(temp, ~ case_when(. <= niche_max ~ 0,
-                                        . > niche_max ~ 1))) %>% 
-        rename(exposure = temp) %>% 
-        mutate(exposure = as.integer(exposure))
-      
-      
-      
-    }) %>% 
-      bind_rows()
+    merged <- merge(spp_matrix, spp_niche, by = "month")
     
-  }
+    merged$exposure_max <- as.integer(pmax(merged$temp - merged$niche_max, 0))
+    merged$exposure_min <- as.integer(pmin(merged$temp - merged$niche_min, 0))
+    
+    # Convert to integers
+    merged$exposure_max <- as.integer(merged$exposure_max)
+    merged$exposure_min <- as.integer(merged$exposure_min)
+    
+    output <- merged[, c("world_id", "year", "month", "exposure_max", "exposure_min")] 
+    
+   return(output)
+    
+  } 
   
   if(!monthly){
     
-    
     niche_max <- max(spp_niche$niche_max)
+    niche_min <- max(spp_niche$niche_min)
     
-    output <- purrr::map(1:12, function(.x){
-      
-      spp_matrix_month <- spp_matrix %>% 
-        filter(month == .x)
-      
-      spp_matrix_month <- spp_matrix_month %>%
-        mutate(across(temp, ~ case_when(. <= niche_max ~ 0,
-                                        . > niche_max ~ 1))) %>% 
-        rename(exposure = temp) %>% 
-        mutate(exposure = as.integer(exposure))
-      
-      
-      
-    }) %>% 
-      bind_rows()
+    # Vectorized calculations
+    spp_matrix$exposure_max <- as.integer(pmax(spp_matrix$temp - niche_max, 0))
+    spp_matrix$exposure_min <- as.integer(pmin(spp_matrix$temp - niche_min, 0))
+    
+    # Select final columns
+    output <- spp_matrix[, c("world_id", "year", "month", "exposure_max", "exposure_min")] 
+    
+    return(output)
     
   }
   
-  return(output)
-  
 }
 
-exposure_results <- purrr::map(species, ~ exposure(.x, species_range, climate_data, niche, monthly = TRUE), .progress = T) %>% 
-  set_names(species)
+
+exposure_results <- pbmclapply(species, 
+                               function(.x) exposure_fast(.x, spp_data, climate_data, niche_limits, monthly = TRUE),
+                               mc.cores = n_cores) %>% 
+  set_names(species) %>% 
+  bind_rows(.id = "species") %>% 
+  as_tibble()
 
 
+print(object.size(exposure_results), units = "Gb")
+
+saveRDS(exposure_results, here("array_workflow/data/exposure_results.rds"))
+# indicator 1: at least n months of exposure during the forecast period
+# is a Boolean indicator: TRUE or FALSE
+
+# indicator 2: total number of months in the forecast period
+# in this case, is between 2001 and 2014
+
+indicator <- exposure_results %>% 
+  group_by(species, world_id) %>% 
+  summarise(indicator_2 = sum(exposure_max > 0),
+            .groups = "drop") %>% 
+  mutate(indicator_1 = ifelse(indicator_2 >= 1, TRUE, FALSE)) 
