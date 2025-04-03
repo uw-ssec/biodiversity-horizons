@@ -103,13 +103,52 @@ Rscript scripts/main.R exposure -i data-raw/bien_config.yml
   ```
 
 - .tif to .rds
+
   ```
   Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/historical.tif" -o "./outputs/historical_data_op.rds"
   ```
+
   or (if range is an argument)
+
   ```
   Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/ssp585.tif" -o "./outputs/future_data_op.rds" -y "2015:2100"
   ```
+
+- BIEN Climate .tif to .rds
+
+```
+Rscript scripts/main.R bienclimate2rds \
+  -i ./data-raw/tier_1/data/climate/ssp585.tif \
+  -o ./data-raw/test_future.rds \
+  -y "2015:2100"
+```
+
+- BIEN Species Ranges Conversion
+
+```
+Rscript scripts/main.R convert_bienranges \
+  -m ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest/manifest.parquet \ #replace with your local path
+  -r ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  -g ./data-raw/global_grid.tif \
+  -o ./data-raw/bien_ranges/processed \
+  -a any \
+  -p FALSE \
+  -w 4
+```
+
+or Subset of species
+
+```
+Rscript scripts/main.R convert_bienranges \
+  -m ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest/manifest.parquet \ #replace with your local path
+  -r ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  -g ./data-raw/global_grid.tif \
+  -o ./data-raw/bien_ranges/processed \
+  -a any \
+  -p FALSE \
+  -w 4 \
+  -s "Aa mathewsii"
+```
 
 ### Step 2: Output Files
 
@@ -168,13 +207,48 @@ sh docker_exposure.sh "./data-raw/bien_config.yml" "./outputs"
   ```
 
 - .tif to .rds
+
   ```
   sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
   ```
+
   or (if range is an argument)
+
   ```
   sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
   ```
+
+- BIEN Climate .tif to .rds
+
+```
+sh docker_bienclimate2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./outputs/bien_historical_climate_data.rds"
+```
+
+- BIEN Species Ranges Conversion
+
+```
+sh docker_convert_bienranges.sh \
+  --manifest ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest \ #replace with your local path
+  --ranges ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  --grid ./data-raw/global_grid.tif \
+  --output ./data-raw/bien_ranges/processed \
+  --parallel FALSE \
+  --workers 4
+```
+
+or subset of species
+
+```
+sh docker_convert_bienranges.sh \
+  --manifest ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest \ #replace with your local path
+  --ranges ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  --grid ./data-raw/global_grid.tif \
+  --output ./data-raw/bien_ranges/processed \
+  --parallel FALSE \
+  --workers 4 \
+  --species "Aa mathewsii"
+
+```
 
 ## Pull Requests
 
