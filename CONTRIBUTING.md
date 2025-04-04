@@ -73,7 +73,7 @@ Ensure that your terminal is at the correct directory level.
   - An outputs directory for script results
   - You can update arguments by updating the shp_config.yml or bien_config.yml.
   - If you face error running the below command - try updating the "workers" to
-    1 in the config.yml and rerun below command.
+    1 in the corresponding `yml` file and rerun below command.
 
 ##### For SHP:
 
