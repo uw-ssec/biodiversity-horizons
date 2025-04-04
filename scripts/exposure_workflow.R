@@ -110,7 +110,7 @@ exposure_workflow <- function(
   exposure_df <- exposure_list %>%
     bind_rows() %>%
     mutate(sum = rowSums(select(., starts_with("2")))) %>%
-    filter(sum < 82) %>% # Select only cells with < 82 suitable years
+    filter(sum < 82) %>% # Select only cells with < 82 suitable years. TODO: Make this a parameter.
     select(-sum)
 
   cl <- future::makeClusterPSOCK(workers, port = 12000, outfile = NULL, verbose = TRUE)
