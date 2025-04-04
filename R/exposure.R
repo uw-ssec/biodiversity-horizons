@@ -12,10 +12,14 @@ exposure <- function(data, species_range, climate_data, niche) {
   spp_data <- species_range[[data]]
   spp_name <- names(species_range)[[data]]
 
-  # Filter climate data for the species' grid cells
-  spp_matrix <- climate_data %>%
-    filter(world_id %in% spp_data) %>%
-    na.omit()
+  # Filter climate data based on type of spp_data
+  spp_matrix <- if (is.vector(spp_data)) {
+    climate_data %>% filter(world_id %in% spp_data)
+  } else {
+    climate_data %>% filter(world_id %in% spp_data$world_id)
+  }
+
+  spp_matrix <- spp_matrix %>% na.omit()
 
   # Extract niche limits for the species
   spp_niche <- niche %>%

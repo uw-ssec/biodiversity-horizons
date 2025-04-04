@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y \
     libproj-dev \
     libudunits2-dev \
     squashfs-tools \
+    cmake \
+    libthrift-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN Rscript -e "install.packages('terra', repos='https://cloud.r-project.org')"
