@@ -67,15 +67,24 @@ Ensure that your terminal is at the correct directory level.
 #### Running exposure calculation workflow:
 
 - Identify your directories:
-  - A data folder with the input_config.yml and .rds files (either your own or
-    the cloned data-raw/ and check input_config.yml)
+  - A data folder with the shp_config.yml (for shapefile-derived species data)
+    or bien_config.yml (for BIEN species data) and relevant .rds files (either
+    your own or from the cloned data-raw/)
   - An outputs directory for script results
-  - You can update arguments by updating the input_config.yml.
+  - You can update arguments by updating the shp_config.yml or bien_config.yml.
   - If you face error running the below command - try updating the "workers" to
-    1 in the input_config.yml and rerun below command.
+    1 in the config.yml and rerun below command.
 
+##### For SHP:
+
+```bash
+Rscript scripts/main.R exposure -i data-raw/shp_config.yml
 ```
-Rscript scripts/main.R exposure -i data-raw/input_config.yml
+
+##### For BIEN:
+
+```bash
+Rscript scripts/main.R exposure -i data-raw/bien_config.yml
 ```
 
 #### Running conversion utilities:
@@ -94,13 +103,52 @@ Rscript scripts/main.R exposure -i data-raw/input_config.yml
   ```
 
 - .tif to .rds
+
   ```
   Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/historical.tif" -o "./outputs/historical_data_op.rds"
   ```
+
   or (if range is an argument)
+
   ```
   Rscript scripts/main.R tif2rds -i "./data-raw/tier_1/data/climate/ssp585.tif" -o "./outputs/future_data_op.rds" -y "2015:2100"
   ```
+
+- BIEN Climate .tif to .rds
+
+```
+Rscript scripts/main.R bienclimate2rds \
+  -i ./data-raw/tier_1/data/climate/ssp585.tif \
+  -o ./data-raw/test_future.rds \
+  -y "2015:2100"
+```
+
+- BIEN Species Ranges Conversion
+
+```
+Rscript scripts/main.R convert_bienranges \
+  -m ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest/manifest.parquet \ #replace with your local path
+  -r ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  -g ./data-raw/global_grid.tif \
+  -o ./data-raw/bien_ranges/processed \
+  -a any \
+  -p FALSE \
+  -w 4
+```
+
+or Subset of species
+
+```
+Rscript scripts/main.R convert_bienranges \
+  -m ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest/manifest.parquet \ #replace with your local path
+  -r ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  -g ./data-raw/global_grid.tif \
+  -o ./data-raw/bien_ranges/processed \
+  -a any \
+  -p FALSE \
+  -w 4 \
+  -s "Aa mathewsii"
+```
 
 ### Step 2: Output Files
 
@@ -125,13 +173,22 @@ docker build -t biodiversityhorizons .
 #### Running exposure workflow:
 
 - Identify your directories:
-  - A data folder with the input_config.yml and .rds files (either your own or
-    the cloned data-raw/)
+  - A data folder with the shp_config.yml (for shapefile-derived species data)
+    or bien_config.yml (for BIEN species data) and relevant .rds files (either
+    your own or from the cloned data-raw/)
   - An outputs directory for script results
-  - You can update arguments by updating the input_config.yml.
+  - You can update arguments by updating the config.yml.
+
+##### For SHP:
 
 ```
-sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+sh docker_exposure.sh "./data-raw/shp_config.yml" "./outputs"
+```
+
+##### For BIEN:
+
+```
+sh docker_exposure.sh "./data-raw/bien_config.yml" "./outputs"
 ```
 
 #### Running conversion utilities:
@@ -150,13 +207,48 @@ sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
   ```
 
 - .tif to .rds
+
   ```
   sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
   ```
+
   or (if range is an argument)
+
   ```
   sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
   ```
+
+- BIEN Climate .tif to .rds
+
+```
+sh docker_bienclimate2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./outputs/bien_historical_climate_data.rds"
+```
+
+- BIEN Species Ranges Conversion
+
+```
+sh docker_convert_bienranges.sh \
+  --manifest ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest \ #replace with your local path
+  --ranges ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  --grid ./data-raw/global_grid.tif \
+  --output ./data-raw/bien_ranges/processed \
+  --parallel FALSE \
+  --workers 4
+```
+
+or subset of species
+
+```
+sh docker_convert_bienranges.sh \
+  --manifest ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest \ #replace with your local path
+  --ranges ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  --grid ./data-raw/global_grid.tif \
+  --output ./data-raw/bien_ranges/processed \
+  --parallel FALSE \
+  --workers 4 \
+  --species "Aa mathewsii"
+
+```
 
 ## Pull Requests
 

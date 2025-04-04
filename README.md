@@ -95,13 +95,22 @@ echo YOUR_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 #### Running exposure workflow:
 
 - Identify your directories:
-  - A data folder with the input_config.yml and .rds files (either your own or
-    the cloned data-raw/)
+  - A data folder with the shp_config.yml (for shapefile-derived species data)
+    or bien_config.yml (for BIEN species data) and relevant .rds files (either
+    your own or from the cloned data-raw/)
   - An outputs directory for script results
   - Example command shown below:
 
+##### For SHP:
+
 ```
-sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
+sh docker_exposure.sh "./data-raw/shp_config.yml" "./outputs"
+```
+
+##### For BIEN:
+
+```
+sh docker_exposure.sh "./data-raw/bien_config.yml" "./outputs"
 ```
 
 #### Running conversion utilities:
@@ -117,13 +126,48 @@ sh docker_exposure.sh "./data-raw/input_config.yml" "./outputs"
   sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
   ```
 - .tif to .rds
+
   ```
   sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
   ```
+
   or (if range is an argument)
+
   ```
   sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
   ```
+
+- BIEN Climate .tif to .rds
+
+```
+sh docker_bienclimate2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./outputs/bien_historical_climate_data.rds"
+```
+
+- BIEN Species Ranges Conversion
+
+```
+sh docker_convert_bienranges.sh \
+  --manifest ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest \ #replace with your local path
+  --ranges ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  --grid ./data-raw/global_grid.tif \
+  --output ./data-raw/bien_ranges/processed \
+  --parallel FALSE \
+  --workers 4
+```
+
+or subset of species
+
+```
+sh docker_convert_bienranges.sh \
+  --manifest ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest \ #replace with your local path
+  --ranges ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs \ #replace with your local path
+  --grid ./data-raw/global_grid.tif \
+  --output ./data-raw/bien_ranges/processed \
+  --parallel FALSE \
+  --workers 4 \
+  --species "Aa mathewsii"
+
+```
 
 ## Setup and Run Apptainer
 
@@ -182,10 +226,18 @@ ls -l /home/biodiversity-horizons/outputs/
 ```
 
 **Step 7: Run the R exposure calculation script (you can modify the arguments by
-updating the input_config.yml file)**
+updating the shp_config.yml or bien_config.yml file)**
+
+##### For SHP:
 
 ```bash
-Rscript scripts/main.R exposure -i data-raw/input_config.yml
+Rscript scripts/main.R exposure -i data-raw/shp_config.yml
+```
+
+##### For BIEN:
+
+```bash
+Rscript scripts/main.R exposure -i data-raw/bien_config.yml
 ```
 
 ## Running and Developing
