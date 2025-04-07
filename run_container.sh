@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # CONTAINER=biodiversityhorizons # for development, change this to your local Docker build name
 CONTAINER=ghcr.io/uw-ssec/biodiversityhorizons
 

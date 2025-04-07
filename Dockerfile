@@ -1,6 +1,7 @@
 FROM ghcr.io/uw-ssec/r-bio-div-base:1.2
 
 
+
 WORKDIR /home/biodiversity-horizons
 
 COPY DESCRIPTION .

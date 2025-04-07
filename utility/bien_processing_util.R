@@ -94,10 +94,8 @@ process_bien_ranges <- function(
     if (any(x == 1, na.rm = TRUE)) 1 else NA
   })
 
+
   if (all(is.na(terra::values(bien_1deg)))) {
-    log_error(" BIEN raster has only NA values after aggregation. Aborting process.")
-    return(NULL)
-  }
 
   # --- Resample to match the climate grid exactly ---
   bien_resampled <- resample(bien_1deg, climate_grid, method = "near")
