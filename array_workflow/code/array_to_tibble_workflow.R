@@ -2,7 +2,7 @@
 
 # load libraries
 library(pacman)
-p_load(tidyverse, here, terra, sf, dplyr, abind, tidyterra, rnaturalearth, pbmcapply)
+p_load(tidyverse, here, terra, sf, dplyr, abind, tidyterra, rnaturalearth, pbmcapply, arrow)
 
 n_cores <- 7
 # STEP 1: load climate data ---------------------------------------------------
@@ -81,7 +81,7 @@ r_template_terrestrial <- r_template %>%
 
 # STEP 2: load species data and convert to gridded format -----------
 # range_data <- readRDS(here("data-raw/primates_shapefiles.rds"))
-species_ranges <- list.files("/Users/andreas/Data/IUCN/rds", recursive = T, full.names = T)[c(1,3,4)]
+species_ranges <- list.files("/Users/andreas/Data/IUCN/rds", recursive = T, full.names = T)
 
 
 
@@ -123,6 +123,7 @@ spp_data <- pbmclapply(species, function(.species) {
 }, mc.cores = n_cores) %>% 
   set_names(species)
 
+saveRDS(spp_data, here("array_workflow/data/spp_data.rds"))
 
 
 # STEP 3: estimate thermal limits ----------------------------------------------
@@ -186,8 +187,14 @@ niche_limits <- pbmclapply(spp_data,
   bind_rows(.id = "species")
 
 
+saveRDS(niche_limits, here("array_workflow/data/niche_limits.rds"))
+
 # STEP 4: calculate exposure ---------------------
   
+
+# niche_limits <- readRDS(here("array_workflow/data/niche_limits.rds"))
+# spp_data <- readRDS(here("array_workflow/data/spp_data.rds"))
+
 species_grid_cells <- unlist(spp_data) %>% 
   unique()
 
@@ -203,9 +210,7 @@ exposure_fast <- function(spp, species_range, climate_data, niche, monthly = TRU
   
   
   spp_world_id <- species_range[[spp]]
-  
   spp_matrix <- climate_data[climate_data$world_id %in% spp_world_id,] %>% drop_na()
-  
   spp_niche <- niche[niche$species == spp,]
   
   
@@ -215,18 +220,12 @@ exposure_fast <- function(spp, species_range, climate_data, niche, monthly = TRU
     
     merged$exposure_max <- as.integer(pmax(merged$temp - merged$niche_max, 0))
     merged$exposure_min <- as.integer(pmin(merged$temp - merged$niche_min, 0))
-    
-    # Convert to integers
-    merged$exposure_max <- as.integer(merged$exposure_max)
-    merged$exposure_min <- as.integer(merged$exposure_min)
-    
-    output <- merged[, c("world_id", "year", "month", "exposure_max", "exposure_min")] 
+    merged$species <- spp
+    output <- merged[, c("species", "world_id", "year", "month", "exposure_max", "exposure_min")] 
     
    return(output)
     
-  } 
-  
-  if(!monthly){
+  } else {
     
     niche_max <- max(spp_niche$niche_max)
     niche_min <- max(spp_niche$niche_min)
@@ -241,29 +240,96 @@ exposure_fast <- function(spp, species_range, climate_data, niche, monthly = TRU
     return(output)
     
   }
+}
+
+
+chunk_size <- 1000
+species_chunks <- split(species, ceiling(seq_along(species) / chunk_size))
+
+for(i in seq_along(species_chunks)){
+  
+  exposure_results <- mclapply(species_chunks[[i]], 
+             function(.x) exposure_fast(.x, spp_data, climate_data, niche_limits, monthly = TRUE),
+             mc.cores = n_cores) 
+  
+  exposure_results <- as_tibble(bind_rows(exposure_results))
+  
+  file_name <- here(glue("array_workflow/data/arrow/exposure_chunk_{sprintf('%03d', i)}.parquet"))
+  write_parquet(exposure_results, file_name)
   
 }
 
 
-exposure_results <- pbmclapply(species, 
-                               function(.x) exposure_fast(.x, spp_data, climate_data, niche_limits, monthly = TRUE),
-                               mc.cores = n_cores) %>% 
-  set_names(species) %>% 
-  bind_rows(.id = "species") %>% 
-  as_tibble()
 
-
-print(object.size(exposure_results), units = "Gb")
-
-saveRDS(exposure_results, here("array_workflow/data/exposure_results.rds"))
 # indicator 1: at least n months of exposure during the forecast period
 # is a Boolean indicator: TRUE or FALSE
 
 # indicator 2: total number of months in the forecast period
 # in this case, is between 2001 and 2014
 
+exposure_results <- open_dataset(here("array_workflow/data/arrow"), format = "parquet") 
+
 indicator <- exposure_results %>% 
   group_by(species, world_id) %>% 
   summarise(indicator_2 = sum(exposure_max > 0),
             .groups = "drop") %>% 
-  mutate(indicator_1 = ifelse(indicator_2 >= 1, TRUE, FALSE)) 
+  mutate(indicator_1 = ifelse(indicator_2 >= 1, TRUE, FALSE)) %>% 
+  collect()
+
+range_size <- purrr::map_dfr(spp_data, ~ as_tibble(length(.x)), .id = "species") %>% 
+  rename(range_size = value)
+
+richness <- as_tibble(as.data.frame(table(unlist(spp_data)))) %>% 
+  rename(world_id = Var1, richness = Freq) %>% 
+  mutate(world_id = as.integer(world_id))
+
+indicator_3 <- exposure_results %>% 
+  group_by(species) %>% 
+  summarise(total_exposure = sum(exposure_max > 0, na.rm = TRUE),
+            .groups = "drop") %>% 
+  left_join(range_size, by = "species") %>%
+  mutate(max_exposure = range_size * 12 * 14) %>% 
+  mutate(indicator_3 = total_exposure /max_exposure) %>% 
+  collect()
+
+# calculate cumulative degrees heating just to test
+
+cum_degrees <- exposure_results %>% 
+  group_by(world_id, month) %>%
+  summarise(cum_degrees = sum(exposure_max, na.rm = TRUE)/1000) %>% 
+  left_join(richness, by = "world_id") %>%
+  mutate(cum_degrees_spp = cum_degrees / richness) %>% 
+  collect()
+
+
+
+
+r <- rast()
+
+r <- purrr::map(1:12, ~{
+  data <- cum_degrees %>% 
+    filter(month == .x)
+  
+  result_raster <- rast(r_template_terrestrial)
+  value <- values(r_template_terrestrial)[,1]  
+  
+  # match your data frame values to the raster cells
+  matched_values <- data$cum_degrees[match(value, data$world_id)]
+  
+  # assign the matched values to the new raster
+  values(result_raster) <- matched_values
+  
+  return(result_raster)
+  
+}) %>% 
+  rast()
+
+
+names(r) <- lubridate::month(1:12, label = TRUE, abbr = TRUE)
+
+ggplot() +
+  tidyterra::geom_spatraster(data = r) +
+  scale_fill_viridis_b(breaks = c(0,1,10,20,30,50,100,200,1000,6200), na.value = NA, option = "H") +
+  facet_wrap(~ lyr, ncol = 3) 
+
+
