@@ -46,7 +46,7 @@ jobs:
           context: .
           file: Dockerfile-base
           tags: |
-            ghcr.io/${{ github.repository_owner }}/r-bio-div-base:1.1
+            ghcr.io/${{ github.repository_owner }}/r-bio-div-base:1.2
             ghcr.io/${{ github.repository_owner }}/r-bio-div-base:latest
           push: true
           platforms: linux/amd64,linux/arm64
