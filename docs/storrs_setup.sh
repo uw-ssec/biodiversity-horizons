@@ -3,7 +3,7 @@
 # https://github.com/uw-ssec/biodiversity-horizons/blob/main/docs/running_on_hyak.md
 
 #----
-#---- Local 
+#---- Local
 #----
 
 pd=~/projects/exposure
@@ -71,7 +71,7 @@ apptainer config global --get "mount home" #Set to "yes"
 
 # So, add --no-home to avoid the home directory being mounted
 # Also, apptainer> $HOME is still set to home directory
-# You can't change it using --env HOME=/home/biodiversity-horizons in the shell call, 
+# You can't change it using --env HOME=/home/biodiversity-horizons in the shell call,
 #  you get a warning. But you may be able to set it in the container definition file
 
 # Need to add --unsquash to get the bind to work
@@ -87,7 +87,7 @@ apptainer shell --cleanenv --no-home \
   --bind $pd/analysis/outputs:/home/biodiversity-horizons/outputs --unsquash \
     $pd/data/basics/biodiversityhorizons_latest.sif
 
-# Alternative approach build the sandbox as a seperate step, so you only do it once
+# Alternative approach build the sandbox as a separate step, so you only do it once
 apptainer build --disable-cache --sandbox $pd/data/basics/bh_sandbox \
   $pd/data/basics/biodiversityhorizons_latest.sif
 
@@ -96,7 +96,7 @@ apptainer shell --cleanenv --no-home \
   --bind $pd/data/data-raw:/home/biodiversity-horizons/data-raw \
   --bind $pd/analysis/outputs:/home/biodiversity-horizons/outputs \
     $pd/data/basics/bh_sandbox
-    
+
 ls -l /home/biodiversity-horizons/data-raw/
 ls -l /home/biodiversity-horizons/outputs/
 
@@ -108,8 +108,7 @@ env | grep HOME #Filter to show that HOME is still set to my local home director
 #Try setting this by default in the container definition file so you don't have to do this
 # %environment
 #     export HOME=/home/biodiversity-horizons
-    
+
 HOME=/home/biodiversity-horizons
 
 Rscript scripts/main.R exposure -i data-raw/input_config.yml
-
