@@ -88,7 +88,7 @@ apptainer shell --cleanenv --no-home \
   --bind $pd/analysis/outputs:/home/biodiversity-horizons/outputs --unsquash \
     $pd/data/basics/biodiversityhorizons_latest.sif
 
-#=== Better apporach
+#=== Better approach
 # Alternative approach build the sandbox as a separate step, so you only do it once
 apptainer build --disable-cache --sandbox $pd/data/basics/bh_sandbox \
   $pd/data/basics/biodiversityhorizons_latest.sif
@@ -113,14 +113,14 @@ env | grep HOME #Filter to show that HOME is still set to my local home director
 
 HOME=/home/biodiversity-horizons
 
-#=== Best apporach
+#=== Best approach
 
 # Build sandbox first, as above
-# Then, set the home directory when lauching apptainer
+# Then, set the home directory when launching apptainer
 apptainer shell --cleanenv \
   --no-home --home /home/biodiversity-horizons \
   --bind $pd/data/data-raw:/home/biodiversity-horizons/data-raw \
   --bind $pd/analysis/outputs:/home/biodiversity-horizons/outputs \
     $pd/data/basics/bh_sandbox
-    
+
 Rscript scripts/main.R exposure -i data-raw/input_config.yml
