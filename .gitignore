@@ -147,3 +147,6 @@ version.py
 outputs/
 
 *.DS_Store
+
+# Ignore processed species files
+data-raw/bien_ranges/processed/
