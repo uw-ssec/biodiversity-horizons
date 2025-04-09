@@ -252,7 +252,7 @@ prepare_bien_climate_data_from_tif <- function(input_file,
 #' @param manifest_path Path to the manifest Parquet file containing all species info.
 #' @param processed_dir Directory to save the processed BIEN Parquet outputs.
 #' @param ranges_folder Directory containing the raw raster files (.tif).
-#' @param climate_grid Path to the climate grid raster to align with.
+#' @param climate_grid_path Path to the climate grid raster to align with.
 #' @param aggregation_rule Aggregation rule used in `process_bien_ranges()`. Default is `"any"`.
 #' @param species_subset Optional vector of species names to process. If `NULL`, processes all species.
 #' @param use_parallel Logical indicating whether to use parallel processing. Default is `TRUE`.
@@ -263,12 +263,12 @@ prepare_bien_climate_data_from_tif <- function(input_file,
 preprocess_all_bien_species <- function(manifest_path,
                                         processed_dir,
                                         ranges_folder,
+                                        climate_grid_path,
                                         aggregation_rule = "any",
                                         species_subset = NULL,
-                                        climate_grid_path,
                                         use_parallel = TRUE,
-                                        number_of_workers = 4) {
-
+                                        number_of_workers = 4,
+                                        plan_type = "multisession") {
   if (!dir.exists(processed_dir)) {
     dir.create(processed_dir, recursive = TRUE)
   }
@@ -287,35 +287,48 @@ preprocess_all_bien_species <- function(manifest_path,
   log_info("Preparing to process {length(species_list)} species...")
 
   if (use_parallel) {
-    log_info("Using parallel processing with {number_of_workers} workers...")
-    future::plan(multisession, workers = number_of_workers)
-  } else {
-    log_info("Using sequential processing...")
-    future::plan(sequential)
-  }
+  log_info("Using parallel plan: {plan_type} with {number_of_workers} workers")
 
-  process_one <- function(species_name) {
-    tryCatch({
-      log_info("Processing {species_name}")
-      result <- process_bien_ranges(
-      species_name = species_name,
-      ranges_folder = ranges_folder,
-      output_folder = processed_dir,
-      manifest_path = manifest_path,
-      climate_grid_path = climate_grid_path,
-      aggregation_rule = aggregation_rule
-    )
-    if (is.null(result)) {
-      log_warn("Species {species_name} returned NULL.")
-    } else {
-      log_info("Successfully processed and saved: {species_name}")
-    }
-  }, error = function(e) {
-    log_error("Failed for {species_name}: {e$message}")
-  })
+  plan_fun <- switch(
+    plan_type,
+    "multicore"    = future::multicore,
+    "multisession" = future::multisession,
+    "sequential"   = future::sequential,
+    stop(glue::glue("Invalid plan_type: {plan_type}. Must be one of: multicore, multisession, sequential"))
+  )
+
+  if (plan_type == "sequential") {
+    future::plan(plan_fun)
+  } else {
+    future::plan(plan_fun, workers = number_of_workers)
+  }
 }
 
-  future_walk(species_list, process_one)
+
+  # Define a serialization-safe function
+  furrr::future_walk(
+    species_list,
+    function(species_name) {
+      tryCatch({
+        log_info("Processing {species_name}")
+        result <- process_bien_ranges(
+          species_name       = species_name,
+          ranges_folder      = ranges_folder,
+          output_folder      = processed_dir,
+          manifest_path      = manifest_path,
+          climate_grid_path  = climate_grid_path,
+          aggregation_rule   = aggregation_rule
+        )
+        if (is.null(result)) {
+          log_warn("Species {species_name} returned NULL.")
+        } else {
+          log_info("Successfully processed and saved: {species_name}")
+        }
+      }, error = function(e) {
+        log_error("Failed for {species_name}: {e$message}")
+      })
+    }
+  )
 
   log_info("BIEN range pre-processing completed.")
 }
