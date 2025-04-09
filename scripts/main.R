@@ -1,6 +1,7 @@
 library(optparse)
 library(yaml)
 library(logger)
+library(stringr)
 
 # Initialize logger
 log_threshold(INFO)
@@ -298,7 +299,12 @@ run_convertbienranges <- function(args) {
       type = "numeric",
       default = parallel::detectCores() - 1,
       help = "Number of parallel workers"
-    )
+    ),
+    make_option(c("--plan_type"),
+            type = "character",
+            default = "multisession",
+            help = "Parallel plan to use: 'multisession', 'multicore', or 'sequential'")
+
   )
 
   opt <- safe_parse_opts(OptionParser(option_list = option_list), args[-1])
@@ -308,7 +314,7 @@ run_convertbienranges <- function(args) {
   check_not_null(opt$ranges, "ranges")
   check_not_null(opt$grid, "grid")
 
-  species_subset <- if (!is.null(opt$subset)) strsplit(opt$subset, ",")[[1]] else NULL
+  species_subset <- if (!is.null(opt$subset)) str_trim(strsplit(opt$subset, ",")[[1]]) else NULL
 
   cat("Running BIEN range preprocessing with options:\n")
   cat("Manifest:", opt$manifest, "\n")
@@ -318,6 +324,7 @@ run_convertbienranges <- function(args) {
   cat("Aggregation Rule:", opt$aggregation_rule, "\n")
   cat("Parallel:", opt$parallel, "\n")
   cat("Workers:", opt$workers, "\n")
+  cat("Plan Type:", opt$plan_type, "\n")
   if (!is.null(species_subset)) cat("Subset of species:", paste(species_subset, collapse = ", "), "\n")
 
   preprocess_all_bien_species(
@@ -328,7 +335,8 @@ run_convertbienranges <- function(args) {
     aggregation_rule     = opt$aggregation_rule,
     species_subset       = species_subset,
     use_parallel         = opt$parallel,
-    number_of_workers    = opt$workers
+    number_of_workers    = opt$workers,
+    plan_type            = opt$plan
   )
 }
 

@@ -9,6 +9,7 @@ OUT_DIR=""
 SPECIES=""
 PARALLEL="FALSE"
 WORKERS=4
+PLAN_TYPE="multisession"
 
 # Parse named arguments
 while [[ "$#" -gt 0 ]]; do
@@ -20,6 +21,7 @@ while [[ "$#" -gt 0 ]]; do
     --species) SPECIES="$2"; shift ;;
     --parallel) PARALLEL="$2"; shift ;;
     --workers) WORKERS="$2"; shift ;;
+    --plan_type) PLAN_TYPE="$2"; shift ;;
     *) echo "Unknown parameter: $1"; exit 1 ;;
   esac
   shift
@@ -49,4 +51,5 @@ run_with_mounts "./data-raw" "$OUT_DIR" \
   -a any \
   -p "$PARALLEL" \
   -w "$WORKERS" \
+  --plan_type "$PLAN_TYPE" \
   "${SPECIES_ARG[@]}"
