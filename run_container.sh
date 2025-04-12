@@ -35,7 +35,13 @@ function run_with_mounts() {
         mkdir -p "$OUT_DIR"
     fi
 
-    docker run --rm -it \
+    if [ -t 1 ]; then
+      DOCKER_TTY="-it"
+    else
+      DOCKER_TTY=""
+    fi
+
+    docker run --rm $DOCKER_TTY \
         -v "$(realpath "$DATA_DIR")":/home/biodiversity-horizons/data-raw \
         -v "$(realpath "$OUT_DIR")":/home/biodiversity-horizons/outputs \
         "${EXTRA_MOUNTS[@]}" \
