@@ -7,6 +7,12 @@ on:
     paths:
       - "Dockerfile"
       - "**/*.R"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "Dockerfile"
+      - "**/*.R"
 
 jobs:
   build-and-push:
