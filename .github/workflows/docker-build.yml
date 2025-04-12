@@ -81,3 +81,31 @@ jobs:
           docker run --rm --entrypoint "R" ghcr.io/${{ github.repository_owner
           }}/${{ env.PACKAGE }}:${{env.VERSION }} -e
           "library(biodiversityhorizons)"
+
+      - name: Run docker_exposure.sh (exposure run test)
+        env:
+          CONTAINER:
+            ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:${{
+            env.VERSION }}
+        run: |
+          chmod +x docker_exposure.sh
+          sh docker_exposure.sh "./data-raw/shp_config.yml" "./outputs"
+
+      - name: Run .shp to .rds (conversion run test)
+        env:
+          CONTAINER:
+            ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:${{
+            env.VERSION }}
+        run: |
+          chmod +x docker_exposure.sh
+          sh docker_shp2rds.sh  "./data-raw/tier_1/data/species_ranges/subset_amphibians.shp" "./data-raw/species_new.rds"
+
+      - name: Run .tif to .rds (conversion run test)
+        env:
+          CONTAINER:
+            ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:${{
+            env.VERSION }}
+        run: |
+          chmod +x docker_exposure.sh
+          sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
+          sh docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
