@@ -7,9 +7,6 @@ on:
     paths:
       - "Dockerfile"
       - "**/*.R"
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build-and-push:
@@ -49,7 +46,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:${{ env.VERSION }}
             ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:latest
           push: true
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           cache-from:
             type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{
             env.PACKAGE }}:latest
