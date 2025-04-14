@@ -288,6 +288,7 @@ preprocess_all_bien_species <- function(manifest_path,
 
   log_info("Preparing to process {length(species_list)} species...")
 
+
   processing_function <- function(species_name) {
     tryCatch({
       log_info("Processing {species_name}")
@@ -319,6 +320,6 @@ preprocess_all_bien_species <- function(manifest_path,
     log_info("Using sequential lapply")
     lapply(species_list, processing_function)
   }
-
+  
   log_info("BIEN range pre-processing completed.")
 }
