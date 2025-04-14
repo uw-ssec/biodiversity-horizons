@@ -49,7 +49,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:${{ env.VERSION }}
             ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:latest
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           cache-from:
             type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{
             env.PACKAGE }}:latest
@@ -111,4 +111,12 @@ jobs:
         run: |
           chmod +x docker_exposure.sh
           bash docker_tif2rds.sh "./data-raw/tier_1/data/climate/historical.tif" "./data-raw/historical_climate_data_new.rds"
+
+      - name: Run .tif to .rds with additional param (conversion run test)
+        env:
+          CONTAINER:
+            ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:${{
+            env.VERSION }}
+        run: |
+          chmod +x docker_exposure.sh
           bash docker_tif2rds.sh "./data-raw/tier_1/data/climate/ssp585.tif" "./data-raw/future_climate_data_new.rds" -y "2015:2100"
