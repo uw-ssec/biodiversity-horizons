@@ -412,8 +412,6 @@ run_exposure <- function(args) {
   )
 }
 
-stop("Temp check to see failure on error")
-
 # Main function
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
