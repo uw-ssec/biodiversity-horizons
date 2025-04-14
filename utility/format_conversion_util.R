@@ -320,6 +320,6 @@ preprocess_all_bien_species <- function(manifest_path,
     log_info("Using sequential lapply")
     lapply(species_list, processing_function)
   }
-  
+
   log_info("BIEN range pre-processing completed.")
 }
