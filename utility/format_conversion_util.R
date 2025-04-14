@@ -9,6 +9,8 @@ library(logger)
 library(arrow)
 library(glue)
 library(purrr)
+library(parallel)
+
 
 source("utility/bien_processing_util.R")
 
@@ -286,49 +288,38 @@ preprocess_all_bien_species <- function(manifest_path,
 
   log_info("Preparing to process {length(species_list)} species...")
 
-  if (use_parallel) {
-  log_info("Using parallel plan: {plan_type} with {number_of_workers} workers")
 
-  plan_fun <- switch(
-    plan_type,
-    "multicore"    = future::multicore,
-    "multisession" = future::multisession,
-    "sequential"   = future::sequential,
-    stop(glue::glue("Invalid plan_type: {plan_type}. Must be one of: multicore, multisession, sequential"))
-  )
+  processing_function <- function(species_name) {
+    tryCatch({
+      log_info("Processing {species_name}")
+      source("utility/bien_processing_util.R")
 
-  if (plan_type == "sequential") {
-    future::plan(plan_fun)
-  } else {
-    future::plan(plan_fun, workers = number_of_workers)
+      result <- process_bien_ranges(
+        species_name       = species_name,
+        ranges_folder      = ranges_folder,
+        output_folder      = processed_dir,
+        manifest_path      = manifest_path,
+        climate_grid_path  = climate_grid_path,
+        aggregation_rule   = aggregation_rule
+      )
+
+      if (is.null(result)) {
+        log_warn("Species {species_name} returned NULL.")
+      } else {
+        log_info("Successfully processed and saved: {species_name}")
+      }
+    }, error = function(e) {
+      log_error("Failed for {species_name}: {e$message}")
+    })
   }
-}
 
-
-  # Define a serialization-safe function
-  furrr::future_walk(
-    species_list,
-    function(species_name) {
-      tryCatch({
-        log_info("Processing {species_name}")
-        result <- process_bien_ranges(
-          species_name       = species_name,
-          ranges_folder      = ranges_folder,
-          output_folder      = processed_dir,
-          manifest_path      = manifest_path,
-          climate_grid_path  = climate_grid_path,
-          aggregation_rule   = aggregation_rule
-        )
-        if (is.null(result)) {
-          log_warn("Species {species_name} returned NULL.")
-        } else {
-          log_info("Successfully processed and saved: {species_name}")
-        }
-      }, error = function(e) {
-        log_error("Failed for {species_name}: {e$message}")
-      })
-    }
-  )
+  if (use_parallel) {
+    log_info("Using parallel::mclapply with {number_of_workers} workers")
+    parallel::mclapply(species_list, processing_function, mc.cores = number_of_workers)
+  } else {
+    log_info("Using sequential lapply")
+    lapply(species_list, processing_function)
+  }
 
   log_info("BIEN range pre-processing completed.")
 }
