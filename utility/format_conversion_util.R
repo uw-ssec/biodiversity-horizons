@@ -269,8 +269,8 @@ preprocess_all_bien_species <- function(manifest_path,
                                         aggregation_rule = "any",
                                         species_subset = NULL,
                                         use_parallel = TRUE,
-                                        number_of_workers = 4,
-                                        plan_type = "multisession") {
+                                        number_of_workers = 4
+                                        ) {
   if (!dir.exists(processed_dir)) {
     dir.create(processed_dir, recursive = TRUE)
   }

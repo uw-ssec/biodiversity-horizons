@@ -299,11 +299,7 @@ run_convertbienranges <- function(args) {
       type = "numeric",
       default = parallel::detectCores() - 1,
       help = "Number of parallel workers"
-    ),
-    make_option(c("--plan_type"),
-            type = "character",
-            default = "multisession",
-            help = "Parallel plan to use: 'multisession', 'multicore', or 'sequential'")
+    )
 
   )
 
@@ -324,7 +320,6 @@ run_convertbienranges <- function(args) {
   cat("Aggregation Rule:", opt$aggregation_rule, "\n")
   cat("Parallel:", opt$parallel, "\n")
   cat("Workers:", opt$workers, "\n")
-  cat("Plan Type:", opt$plan_type, "\n")
   if (!is.null(species_subset)) cat("Subset of species:", paste(species_subset, collapse = ", "), "\n")
 
   preprocess_all_bien_species(
@@ -335,8 +330,7 @@ run_convertbienranges <- function(args) {
     aggregation_rule     = opt$aggregation_rule,
     species_subset       = species_subset,
     use_parallel         = opt$parallel,
-    number_of_workers    = opt$workers,
-    plan_type            = opt$plan
+    number_of_workers    = opt$workers
   )
 }
 
