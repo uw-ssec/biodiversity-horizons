@@ -41,6 +41,7 @@ cd /gscratch/scrubbed/<UWNetid>/
 ```
 mkdir -p /gscratch/scrubbed/<UWNetid>/basics
 mkdir -p /gscratch/scrubbed/<UWNetid>/data-raw
+mkdir -p /gscratch/scrubbed/<UWNetid>/data-raw/bien_ranges/processed
 ```
 
 - Verify the directory exists:
@@ -76,6 +77,21 @@ scp -r data-raw <UWNetid>@klone.hyak.uw.edu:/gscratch/scrubbed/<UWNetid>/
 scp -r outputs <UWNetid>@klone.hyak.uw.edu:/gscratch/scrubbed/<UWNetid>/
 ```
 
+- Use the `rsync` command to transfer BIEN ranges data from local (replace local
+  path with your own directory where BIEN ranges are stored) to Hyak:
+
+- Transfer `manifest` file (From local directory to Hyak):
+
+```
+rsync -avz ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/manifest/ <UWNetid>@klone.hyak.uw.edu:/gscratch/scrubbed/<UWNetid>/data-raw/manifest/
+```
+
+- Transfer `tif` files (From local directory to Hyak):
+
+```
+rsync -avz ~/Desktop/home/bsc23001/projects/bien_ranges/data/oct18_10k/tifs <UWNetid>@klone.hyak.uw.edu:/gscratch/scrubbed/<UWNetid>/data-raw/tifs/
+```
+
 Enter your Hyak password when prompted.
 
 ## Step 3: Verify the Data Transfer on Hyak
@@ -103,14 +119,14 @@ successful.
 ## Step 4: Pull the .sif Image on Hyak from Container registry
 
 ```
-apptainer pull /gscratch/scrubbed/<<UWNetid>/basics/biodiversityhorizons_latest.sif \
+apptainer pull /gscratch/scrubbed/<UWNetid>/basics/biodiversityhorizons_latest.sif \
     docker://ghcr.io/uw-ssec/biodiversityhorizons:latest
 ```
 
 Alternatively, try with Singularity:
 
 ```
-singularity pull /gscratch/scrubbed/<<UWNetid>/basics/biodiversityhorizons_latest.sif \
+singularity pull /gscratch/scrubbed/<UWNetid>/basics/biodiversityhorizons_latest.sif \
     docker://ghcr.io/uw-ssec/biodiversityhorizons:latest
 ```
 
@@ -157,15 +173,38 @@ Move to the `biodiversity-horizons` directory inside the container:
 cd /home/biodiversity-horizons
 ```
 
-## Step 7: Run the R Script
-
-Run with Default Arguments in input_config.yml
+## Step 7: Run BIEN Species Conversion Utility (Optional: If want to process BIEN Ranges)
 
 ```
-Rscript scripts/main.R exposure -i data-raw/input_config.yml
+Rscript scripts/main.R convert_bienranges \
+  --manifest data-raw/manifest \
+  --ranges data-raw/tifs \
+  --grid data-raw/global_grid.tif \
+  --output data-raw/bien_ranges/processed \
+  --parallel TRUE \
+  --workers 8
 ```
 
-## Step 8: Exit the Container
+After the command completes, you should see `.parquet` files inside
+`data-raw/bien_ranges/processed/`
+
+## Step 8: Run the Exposure Workflow Script
+
+Run with Default Arguments in `config.yml`
+
+For BIEN Ranges:
+
+```
+Rscript scripts/main.R exposure -i data-raw/bien_config.yml
+```
+
+For SHP:
+
+```
+Rscript scripts/main.R exposure -i data-raw/shp_config.yml
+```
+
+## Step 9: Exit the Container
 
 ```
 exit
