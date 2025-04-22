@@ -21,8 +21,12 @@ RUN apt-get update && apt-get install -y \
     squashfs-tools \
     cmake \
     libthrift-dev \
+    openmpi-bin \
+    openmpi-doc \
+    libopenmpi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN Rscript -e "install.packages('terra', repos='https://cloud.r-project.org')"
 RUN Rscript -e "install.packages('remotes', repos='https://cloud.r-project.org')"
 RUN Rscript -e "install.packages('devtools', repos='https://cloud.r-project.org', dependencies=TRUE)"
+RUN Rscript -e "install.packages('pdbMPI', repos='https://cloud.r-project.org')"
