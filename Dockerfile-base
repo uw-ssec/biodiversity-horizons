@@ -29,4 +29,4 @@ RUN apt-get update && apt-get install -y \
 RUN Rscript -e "install.packages('terra', repos='https://cloud.r-project.org')"
 RUN Rscript -e "install.packages('remotes', repos='https://cloud.r-project.org')"
 RUN Rscript -e "install.packages('devtools', repos='https://cloud.r-project.org', dependencies=TRUE)"
-RUN Rscript -e "install.packages('pdbMPI', repos='https://cloud.r-project.org')"
+RUN Rscript -e "install.packages('pbdMPI', repos='https://cloud.r-project.org')"
