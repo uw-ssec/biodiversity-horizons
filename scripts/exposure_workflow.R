@@ -27,13 +27,6 @@ exposure_workflow <- function(
     plan_type,
     workers,
     exposure_result_file) {
-  # TODO: REMOVE THIS
-  # workers <- NULL
-  # species_type <- "shp"
-  # plan_type <- "multisession"
-  # historical_climate_filepath <- "/Users/carlosg/repos/biodiversity-horizons/data-raw/historical_climate_data_new.rds"
-  # future_climate_filepath <- "/Users/carlosg/repos/biodiversity-horizons/data-raw/future_climate_data_new.rds"
-  # species_filepath <- "/Users/carlosg/repos/biodiversity-horizons/data-raw/species_new.rds"
   if (is.null(workers)) {
     workers <- availableCores() - 1
     log_info("Number of workers not provided. Using {workers} workers.")
@@ -77,7 +70,6 @@ exposure_workflow <- function(
 
     log_info("Rank {mpi_rank} processing {length(species_files)} BIEN species files.")
     species_list <- list()
-    # TODO: For BIEN it may be better to split the files by mpi rank
     for (file in species_files) {
       species_name <- gsub(BIEN_PARQUET_SUFFIX, "", basename(file))
       bien_data <- arrow::read_parquet(file)
@@ -165,12 +157,12 @@ exposure_workflow <- function(
   stopCluster(cl)
   log_info("Exposure time calculation complete.")
 
-  combined_results <- list(res_final) # Include rank 0's results
   if (mpi_rank != 0) {
     # Other ranks: Send results to rank 0
     log_info("Rank {mpi_rank} sending results to rank 0")
     pbdMPI::send(res_final, rank.dest = 0, tag = mpi_rank)
   } else {
+    combined_results <- list(res_final) # Include rank 0's results
     # Rank 0: Receive results from all other ranks
     log_info("Rank 0 has {nrow(res_final)} results")
     for (rank in seq_len(mpi_size - 1)) {
