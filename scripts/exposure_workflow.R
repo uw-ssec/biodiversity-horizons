@@ -56,6 +56,12 @@ exposure_workflow <- function(
   if (species_type == "shp") {
     log_info("Loading Shapefile-derived species data from {species_filepath}")
     species_list <- readRDS(species_filepath)
+    log_info("Loaded {length(species_list)} species.")
+    # Split the species list into chunks based on the number of ranks
+    species_chunks <- split(species_list, seq_along(species_list) %% mpi_size)
+
+    # Assign the chunk corresponding to the current rank
+    species_list <- species_chunks[[mpi_rank + 1]]
   } else if (species_type == "bien") {
     log_info("Loading BIEN species data from directory: {species_filepath}")
     species_files <- list.files(
@@ -63,7 +69,13 @@ exposure_workflow <- function(
       pattern = BIEN_PARQUET_SUFFIX,
       full.names = TRUE
     )
+    log_info("Found {length(species_files)} BIEN species files.")
+    species_file_chunks <- split(species_files, seq_along(species_files) %% mpi_size)
 
+    # Assign the chunk corresponding to the current rank
+    species_files <- species_file_chunks[[mpi_rank + 1]]
+
+    log_info("Rank {mpi_rank} processing {length(species_files)} BIEN species files.")
     species_list <- list()
     # TODO: For BIEN it may be better to split the files by mpi rank
     for (file in species_files) {
@@ -81,17 +93,8 @@ exposure_workflow <- function(
     stop("Unsupported species_type: must be 'shp' or 'bien'")
   }
 
-  log_info("Loaded {length(species_list)} species.")
-  # Split the species list into chunks based on the number of ranks
-  species_chunks <- split(species_list, seq_along(species_list) %% mpi_size)
-
-  # Assign the chunk corresponding to the current rank
-  species_list <- species_chunks[[mpi_rank + 1]]
 
   log_info("Rank {mpi_rank} processing {length(species_list)} species.")
-
-  species_chunks <- split(species_list, seq_along(species_list) %% mpi_size)
-  species_list <- species_chunks[[mpi_rank + 1]]
 
   # Load functions
   log_info("Loading package functions...")
@@ -163,7 +166,11 @@ exposure_workflow <- function(
   log_info("Exposure time calculation complete.")
 
   combined_results <- list(res_final) # Include rank 0's results
-  if (mpi_rank == 0) {
+  if (mpi_rank != 0) {
+    # Other ranks: Send results to rank 0
+    log_info("Rank {mpi_rank} sending results to rank 0")
+    pbdMPI::send(res_final, rank.dest = 0, tag = mpi_rank)
+  } else {
     # Rank 0: Receive results from all other ranks
     log_info("Rank 0 has {nrow(res_final)} results")
     for (rank in seq_len(mpi_size - 1)) {
@@ -172,26 +179,22 @@ exposure_workflow <- function(
       combined_results[[rank + 1]] <- received_result
       log_info("Rank 0 received {nrow(received_result)} results from rank {rank}")
     }
-  } else {
-    # Other ranks: Send results to rank 0
-    log_info("Rank {mpi_rank} sending results to rank 0")
-    pbdMPI::send(res_final, rank.dest = 0, tag = mpi_rank)
+    # Combine all results into a single data frame
+    final_combined_result <- bind_rows(combined_results) %>% na.omit()
+
+    # Save the combined result
+    output_dir <- "outputs"
+    if (!dir.exists(output_dir)) {
+      dir.create(output_dir, recursive = TRUE)
+    }
+
+    saveRDS(
+      final_combined_result,
+      file.path(output_dir, exposure_result_file)
+    )
+
+    log_info("Saved {nrow(final_combined_result)} results to {file.path(output_dir, exposure_result_file)}")
   }
-  # Combine all results into a single data frame
-  final_combined_result <- bind_rows(combined_results) %>% na.omit()
-
-  # Save the combined result
-  output_dir <- "outputs"
-  if (!dir.exists(output_dir)) {
-    dir.create(output_dir, recursive = TRUE)
-  }
-
-  saveRDS(
-    final_combined_result,
-    file.path(output_dir, exposure_result_file)
-  )
-
-  log_info("Saved {nrow(final_combined_result)} results to {file.path(output_dir, exposure_result_file)}")
 
   pbdMPI::finalize() # Finalize MPI
 
