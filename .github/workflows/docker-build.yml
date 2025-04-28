@@ -7,6 +7,9 @@ on:
     paths:
       - "Dockerfile"
       - "**/*.R"
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build-and-push:
@@ -41,15 +44,15 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile
+          file: Dockerfile-base
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:${{ env.VERSION }}
-            ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE }}:latest
+            ghcr.io/${{ github.repository_owner }}/r-bio-div-base:1.3
+            ghcr.io/${{ github.repository_owner }}/r-bio-div-base:latest
           push: true
           platforms: linux/amd64,linux/arm64
           cache-from:
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{
-            env.PACKAGE }}:latest
+            type=registry,ref=ghcr.io/${{ github.repository_owner
+            }}/r-bio-div-base:latest
           cache-to: type=inline
   test:
     runs-on: ubuntu-latest
