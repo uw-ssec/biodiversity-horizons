@@ -41,6 +41,9 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Setup MPI
+        uses: mpi4py/setup-mpi@v1
+
       - name: Install required R packages
         run: |
           Rscript -e 'install.packages(c("magrittr", "usethis", "roxygen2"))'
