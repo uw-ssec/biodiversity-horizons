@@ -1,4 +1,4 @@
-FROM ghcr.io/uw-ssec/r-bio-div-base:1.2
+FROM ghcr.io/uw-ssec/r-bio-div-base:1.3
 
 
 
