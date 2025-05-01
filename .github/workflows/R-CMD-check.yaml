@@ -51,27 +51,6 @@ jobs:
         uses: mpi4py/setup-mpi@v1
         if: matrix.config.os == 'windows-latest'
 
-      # - name: Install MPI
-      #   if: matrix.config.os != 'windows-latest'
-      # - name: Install MPI
-      #   if: matrix.config.os != 'windows-latest'
-      #   shell: bash
-      #   run: |
-      #     if [[ "$RUNNER_OS" == "Linux" ]]; then
-      #       sudo apt-get update
-      #       sudo apt-get install -y openmpi-bin libopenmpi-dev
-      #     elif [[ "$RUNNER_OS" == "macOS" ]]; then
-      #       brew install open-mpi
-      #       echo "$(brew --prefix open-mpi)/bin" >> $GITHUB_PATH
-      #     fi
-
-      # - name: Install MS-MPI on Windows
-      #   if: matrix.config.os == 'windows-latest'
-      #   shell: powershell
-      #   run: |
-      #     choco install msmpi -y
-      #     echo "C:\Program Files\Microsoft MPI\Bin" | Out-File -Append -FilePath $env:GITHUB_PATH
-
       - name: Install required R packages
         run: |
           Rscript -e 'install.packages(c("magrittr", "usethis", "roxygen2"))'
