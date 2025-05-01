@@ -43,6 +43,13 @@ jobs:
 
       - name: Setup MPI
         uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: openmpi
+        if: matrix.config.os != 'windows-latest'
+
+      - name: Setup MPI
+        uses: mpi4py/setup-mpi@v1
+        if: matrix.config.os == 'windows-latest'
 
       - name: Install required R packages
         run: |
