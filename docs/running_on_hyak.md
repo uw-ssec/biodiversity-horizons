@@ -136,7 +136,38 @@ Verify the download:
 ls -l /gscratch/scrubbed/<UWNetid>/basics/
 ```
 
-## Step 5: Run Apptainer with the Transferred Data
+## Step 5: Running on HPC (Hyak) with MPI
+
+(Skip to Step 6 if you don't want to use MPI)
+
+On high-performance clusters like Hyak, you can run the workflow using Apptainer
+and MPI to scale across multiple nodes or cores.
+
+#### 1. Allocate Resources with `salloc`
+
+Use the following example to allocate 2 nodes with 2 tasks (MPI ranks) each:
+
+```bash
+salloc --partition=ckpt-all --nodes=2 --ntasks=2 --cpus-per-task=2 --mem=10G --time=2:00:00
+```
+
+Make sure `--ntasks` matches the number of MPI ranks you plan to run.
+
+#### 2. After allocation, launch the workflow using mpiexec:
+
+```
+mpiexec -n 2 apptainer exec \
+  --pwd /home/biodiversity-horizons \
+  --bind /gscratch/scrubbed/<netid>/data-raw:/home/biodiversity-horizons/data-raw \
+  --bind /gscratch/scrubbed/<netid>/outputs:/home/biodiversity-horizons/outputs \
+  /gscratch/scrubbed/<netid>/basics/biodiversityhorizons_latest.sif \
+  Rscript scripts/main.R exposure -i data-raw/shp_config.yml --workers 2
+```
+
+You can use `bien_config.yml` in place of `shp_config.yml` to run the BIEN
+workflow.
+
+## Step 6: Run Apptainer with the Transferred Data (If not using MPI)
 
 - Start an Apptainer shell with the correct bind paths:
 
@@ -165,7 +196,7 @@ ls -l /home/biodiversity-horizons/data-raw/
 ls -l /home/biodiversity-horizons/outputs/
 ```
 
-## Step 6: Navigate to the Project Directory
+## Step 7: Navigate to the Project Directory
 
 Move to the `biodiversity-horizons` directory inside the container:
 
@@ -173,7 +204,7 @@ Move to the `biodiversity-horizons` directory inside the container:
 cd /home/biodiversity-horizons
 ```
 
-## Step 7: Run BIEN Species Conversion Utility (Optional: If want to process BIEN Ranges)
+## Step 8: Run BIEN Species Conversion Utility (Optional: If want to process BIEN Ranges)
 
 ```
 Rscript scripts/main.R convert_bienranges \
@@ -188,7 +219,7 @@ Rscript scripts/main.R convert_bienranges \
 After the command completes, you should see `.parquet` files inside
 `data-raw/bien_ranges/processed/`
 
-## Step 8: Run the Exposure Workflow Script
+## Step 9: Run the Exposure Workflow Script
 
 Run with Default Arguments in `config.yml`
 
@@ -204,7 +235,7 @@ For SHP:
 Rscript scripts/main.R exposure -i data-raw/shp_config.yml
 ```
 
-## Step 9: Exit the Container
+## Step 10: Exit the Container
 
 ```
 exit
