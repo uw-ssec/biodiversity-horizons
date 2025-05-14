@@ -200,7 +200,13 @@ apptainer pull /mnt/biodiversityhorizons.sif docker://ghcr.io/uw-ssec/biodiversi
 ls -l /mnt/biodiversityhorizons.sif
 ```
 
-**Step 5: Run Apptainer shell and mount required directories**
+**Step 5: Using MPI on Hyak (Optional)**
+
+For MPI-based runs on Hyak, see
+[Step 5: Running on HPC (Hyak) with MPI](docs/running_on_hyak.md#step-5-running-on-hpc-hyak-with-mpi).
+
+**Step 6: Run Apptainer shell and mount required directories (If not using
+MPI)**
 
 ```
 apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw,/mnt/outputs:/home/biodiversity-horizons/outputs /mnt/biodiversityhorizons.sif
@@ -208,7 +214,7 @@ apptainer shell --bind /mnt/data-raw:/home/biodiversity-horizons/data-raw,/mnt/o
 
 ### Inside Apptainer Shell:
 
-**Step 6: Move to the correct working directory**
+**Step 7: Move to the correct working directory**
 
 ```
 cd /home/biodiversity-horizons
@@ -225,7 +231,7 @@ ls -l /home/biodiversity-horizons/data-raw/
 ls -l /home/biodiversity-horizons/outputs/
 ```
 
-**Step 7: Run the R exposure calculation script (you can modify the arguments by
+**Step 8: Run the R exposure calculation script (you can modify the arguments by
 updating the shp_config.yml or bien_config.yml file)**
 
 ##### For SHP:

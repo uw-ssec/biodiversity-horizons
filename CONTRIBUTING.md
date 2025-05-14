@@ -87,6 +87,14 @@ Rscript scripts/main.R exposure -i data-raw/shp_config.yml
 Rscript scripts/main.R exposure -i data-raw/bien_config.yml
 ```
 
+#### Running exposure workflow on multiple nodes via MPI:
+
+```bash
+mpiexec -n 2 Rscript scripts/main.R exposure --input_yml data-raw/shp_config.yml
+```
+
+Replace with `bien_config.yml` to run BIEN ranges
+
 #### Running conversion utilities:
 
 - .shp to .rds (see below on how to pass additional arguments)
