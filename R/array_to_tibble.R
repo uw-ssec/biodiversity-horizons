@@ -4,14 +4,12 @@
 #' @param temporal.resolution Whether the data comes at daily or monthly scale
 #' @param latitude Name of the latitude variable in the array data
 #' @param longitude Name of the longitude variable in the array data
-#' @param mask Whether the function should be masked to retain only data over land
-#' @param data.as.integer Select if the climate data should be converted from double to integer to reduce file size 
+#' @param mask Shape file that would be used to mask the raster
+#' @param data.as.integer If TRUE the climate data would be converted from double to integer to reduce file size 
 #' @return A tibble with five columns: member, world_id, year, month, temp
 #' @importFrom stringr str_detect
 #' @importFrom tibble tibble as_tibble
-#' @importFrom terra rast values ncell mask
-#' @importFrom sf st_transform st_crs
-#' @importFrom rnaturalearth ne_countries
+#' @importFrom terra mask
 #' @importFrom dplyr select left_join arrange rename
 #' @importFrom stats na.omit
 #' @export
@@ -21,7 +19,7 @@ array_to_tibble <- function(array.data,
                             temporal.resolution = "months", 
                             latitude = "lat",
                             longitude = "lon",
-                            mask = FALSE, 
+                            mask = NULL, 
                             data.as.integer = TRUE){
   
   if(!all(c(latitude, longitude) %in% names(array.data))) stop("Latitude and longitude names do not match the names in the array")
@@ -51,7 +49,7 @@ array_to_tibble <- function(array.data,
   
   lat <- rep(rep(lats, each = n_lon), times = n_year * n_month)
   lat <- rep(lat, times = n_member)
-
+  
   year <- rep(rep(years, each = n_lon * n_lat), times = n_month)
   year <- rep(year, times = n_member)
   
@@ -60,7 +58,7 @@ array_to_tibble <- function(array.data,
   
   member <- rep(members, each = n_lon * n_lat * n_year * n_month)
   
-
+  
   
   
   # convert array to vector and create tibble
@@ -88,13 +86,10 @@ array_to_tibble <- function(array.data,
       temp = as.vector(temp_array))
     
   }
- 
+  
   
   # should the data be masked?
-  if(mask){
-    
-    world <- ne_countries(scale = "large", returnclass = "sf") %>% 
-      st_transform(crs = st_crs(raster.template))
+  if(!is.null(mask)){
     
     raster.template <- raster.template %>% 
       terra::mask(world, touches = TRUE) 
@@ -113,7 +108,7 @@ array_to_tibble <- function(array.data,
     dplyr::select(member, world_id, year, month, temp) %>% 
     dplyr::arrange(member, world_id, year, month) %>% 
     na.omit()
- 
+  
   return(temp_tbl)
   
 }
