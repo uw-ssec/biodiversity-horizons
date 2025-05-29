@@ -4,13 +4,56 @@
 
 <!-- badges: start -->
 
+<span><img src="https://img.shields.io/badge/SSEC-Project-purple?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAAOCAQAAABedl5ZAAAACXBIWXMAAAHKAAABygHMtnUxAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAMNJREFUGBltwcEqwwEcAOAfc1F2sNsOTqSlNUopSv5jW1YzHHYY/6YtLa1Jy4mbl3Bz8QIeyKM4fMaUxr4vZnEpjWnmLMSYCysxTcddhF25+EvJia5hhCudULAePyRalvUteXIfBgYxJufRuaKuprKsbDjVUrUj40FNQ11PTzEmrCmrevPhRcVQai8m1PRVvOPZgX2JttWYsGhD3atbHWcyUqX4oqDtJkJiJHUYv+R1JbaNHJmP/+Q1HLu2GbNoSm3Ft0+Y1YMdPSTSwQAAAABJRU5ErkJggg==&style=plastic" /><span>
+![BSD License](https://badgen.net/badge/license/BSD-3-Clause/blue)
+![Platform](https://img.shields.io/badge/platform-Docker%20%7C%20Apptainer-green)
+[![Docker Image](https://img.shields.io/badge/Docker-r--bio--div--base-blue)](https://github.com/uw-ssec/biodiversity-horizons/pkgs/container/r-bio-div-base)
+![R Version](https://img.shields.io/badge/R-%3E=4.2.0-blue)
+
+[![Documentation Status](https://readthedocs.org/projects/ssec-python-project-template/badge/?version=latest)](https://ssec-python-project-template.readthedocs.io/en/latest/?badge=latest)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/uw-ssec/python-project-template/main.svg)](https://results.pre-commit.ci/latest/github/uw-ssec/python-project-template/main)
+[![CI](https://github.com/uw-ssec/python-project-template/actions/workflows/ci.yml/badge.svg)](https://github.com/uw-ssec/python-project-template/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/uw-ssec/biodiversity-horizons/graph/badge.svg?token=ee1oeNuMlb)](https://codecov.io/gh/uw-ssec/biodiversity-horizons)
 
 <!-- badges: end -->
 
-**Biodiversity Horizons** is an R-based project for processing climate data and
-analyzing primate distributions. It can be used locally (in R/RStudio) or run
-inside a Docker container for consistent dependencies across systems.
+## Project Overview
+
+**Biodiversity Horizons** is an open-source R-based software package designed to
+generate near-term climate impact projections on global biodiversity. Climate
+change poses an escalating threat to biodiversity, but most existing risk
+assessments focus on long-term scenarios (e.g., 2050 or 2100), limiting their
+usefulness for immediate conservation actions. The Biodiversity Horizons project
+bridges this gap by forecasting biodiversity shifts over the next 1–10 years—an
+actionable timescale for policy makers, land managers, and conservationists.
+
+## Solution and Features
+
+To achieve this, the project leverages recent advances in short-term climate
+models and combines them with species distribution data from both curated
+shapefiles and the BIEN database. Biodiversity Horizons offers a streamlined and
+modular software solution that can be run:
+
+1. Locally in R/RStudio for smaller datasets or prototyping
+
+2. Within Docker containers for consistent cross-platform deployment
+
+3. On high-performance computing (HPC) environments using Apptainer with MPI
+   support for large-scale runs
+
+### Key features include:
+
+1. Support for multiple data sources (e.g., BIEN and shapefile-based species
+   ranges)
+
+2. Efficient processing of geospatial and climate data
+
+3. Parallel execution with customizable worker counts
+
+4. Compatibility with HPC clusters and containerized workflows
+   (Docker/Apptainer)
+
+5. Scripted utilities for preprocessing, conversion, and visualization
 
 ## Installation
 
