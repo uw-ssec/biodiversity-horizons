@@ -86,6 +86,7 @@ containerized environment, ensuring consistent R dependencies.
 ### 1. Prerequisites
 
 - #### Install Docker: Refer to [**Install Docker Desktop Guide**](https://docs.docker.com/desktop/)
+- #### Click on Docker for Desktop on your machine and ensure it is running. 
 
 ### 2. Pull the Docker Image
 
